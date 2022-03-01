@@ -9,11 +9,14 @@ import (
 )
 
 var (
-	ErrDuplicate    = errors.New("record already exists")
-	ErrNotFound     = errors.New("record does not exist")
-	ErrUpdateFailed = errors.New("record could not be updated")
-	ErrDeleteFailed = errors.New("record could not be deleted")
-	ErrInvalidID    = errors.New("record ID is invalid")
+	ErrDuplicate       = errors.New("record already exists")
+	ErrNotFound        = errors.New("record does not exist")
+	ErrUpdateFailed    = errors.New("record could not be updated")
+	ErrDeleteFailed    = errors.New("record could not be deleted")
+	ErrInvalidID       = errors.New("record ID is invalid")
+	ErrInvalidEmail    = errors.New("email is not valid")
+	ErrInvalidName     = errors.New("name is not valid")
+	ErrInvalidUsername = errors.New("username is not valid")
 )
 
 type Repository interface {
@@ -51,7 +54,13 @@ func (r *SQLiteRepository) Initialize() error {
 	return err
 }
 
-func (r *SQLiteRepository) Insert(e Entry)  (*Entry, error) {
+func (r *SQLiteRepository) Insert(e Entry) (*Entry, error) {
+	err := ValidateEntry(&e) 
+
+	if err != nil {
+		return nil, err
+	}
+
 	res, err := r.db.Exec(`INSERT INTO default_table(name, username, email) 
 		values(?,?,?)`, e.Name, e.Username, e.Email)
 
@@ -129,7 +138,7 @@ func (r *SQLiteRepository) Update(id int64, updated Entry) (*Entry, error) {
 	}
 
 	rowsAffected, err := res.RowsAffected()
-	
+
 	if err != nil {
 		return nil, err
 	}

@@ -88,13 +88,6 @@ func TestInsert(t *testing.T) {
 		assertError(t, err, ErrDuplicate)
 	})
 
-	t.Run("inserting invalid entry", func(t *testing.T) {
-		repo, teardown := setup(t)
-		defer teardown()
-
-		_, err := repo.Insert(e0)
-		assertError(t, err, nil)
-	})
 }
 
 func assertError(t testing.TB, got, expected error) {

@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"log"
 
 	"github.com/mattn/go-sqlite3"
 )
@@ -50,27 +51,28 @@ func (r *SQLiteRepository) Initialize() error {
 	return err
 }
 
-func (r *SQLiteRepository) Insert(e Entry)  error {
+func (r *SQLiteRepository) Insert(e Entry)  (*Entry, error) {
 	res, err := r.db.Exec(`INSERT INTO default_table(name, username, email) 
 		values(?,?,?)`, e.Name, e.Username, e.Email)
 
 	if err != nil {
 		var sqliteErr sqlite3.Error
 		if errors.As(err, &sqliteErr) {
-			if errors.Is(sqliteErr, ErrDuplicate) {
-				return  ErrDuplicate
+			if errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
+				return nil, ErrDuplicate
 			}
 		}
-		return err
+		log.Fatal("Sad hood movie")
+		return nil, err
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	e.ID = id
-	return nil
+	return &e, nil
 }
 
 func (r *SQLiteRepository) All() (all []Entry, e error) {

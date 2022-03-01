@@ -7,12 +7,6 @@ import (
 
 // Test Entries
 var (
-	e0 = Entry{
-		ID:       0,
-		Name:     "",
-		Username: "",
-		Email:    ""}
-
 	e1 = Entry{
 		ID:       1,
 		Name:     "Test 1",
@@ -35,16 +29,11 @@ var (
 func TestDisplay(t *testing.T) {
 	t.Parallel()
 
-	displayTests := []struct {
+	tt := []struct {
 		description string
 		got         Entry
 		expect      string
 	}{
-		{
-			description: "Empty Entry",
-			got:         e0,
-			expect:      "ID: 0\nName: \nUsername: \nEmail: \n",
-		},
 		{
 			description: "Entry 1",
 			got:         e1,
@@ -57,7 +46,7 @@ func TestDisplay(t *testing.T) {
 		},
 	}
 
-	for _, tc := range displayTests {
+	for _, tc := range tt {
 		t.Run(tc.description, func(t *testing.T) {
 			var buf bytes.Buffer
 			tc.got.Display(&buf)
@@ -68,3 +57,4 @@ func TestDisplay(t *testing.T) {
 		})
 	}
 }
+

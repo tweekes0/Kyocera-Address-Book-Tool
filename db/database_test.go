@@ -203,3 +203,43 @@ func TestGetByUsername(t *testing.T) {
 		assertEntryInfo(t, tc.got, tc.expected)
 	}
 }
+
+func TestUpdate(t *testing.T) {
+	repo, teardown := setupWithInserts(t)
+	defer teardown()
+
+	updated, err := NewEntry(1, "new name", "new username", "newemail@test.com")
+	assertError(t, err, nil)
+
+	found, foundErr := repo.Update(1, *updated)
+	notFound, notFoundErr := repo.Update(999999, *updated)
+
+	tt := []databaseTest{
+		{
+			description: "update existing user",
+			got: entryInfo{
+				entry: found,
+				err:   foundErr,
+			},
+			expected: entryInfo{
+				entry: updated,
+				err:   nil,
+			},
+		},
+		{
+			description: "update non-existent user",
+			got: entryInfo{
+				entry: notFound,
+				err:   notFoundErr,
+			},
+			expected: entryInfo{
+				entry: nil,
+				err:   ErrUpdateFailed,
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		assertEntryInfo(t, tc.got, tc.expected)
+	}
+}

@@ -32,6 +32,11 @@ func assertEntry(t testing.TB, got, expected *Entry) {
 	}
 }
 
+func assertEntryInfo(t testing.TB, got, expected entryInfo) {
+	assertError(t, got.err, expected.err)
+	assertEntry(t, got.entry, expected.entry)
+}
+
 func setup(t *testing.T) (*SQLiteRepository, func()) {
 	t.Parallel()
 
@@ -74,26 +79,48 @@ func TestInsert(t *testing.T) {
 		repo, teardown := setup(t)
 		defer teardown()
 
-		_e1, err := repo.Insert(*e1)
-		assertError(t, err, nil)
-
-		_e2, err := repo.Insert(*e2)
-		assertError(t, err, nil)
-
-		_e3, err := repo.Insert(*e3)
-		assertError(t, err, nil)
+		_e1, err1 := repo.Insert(*e1)
+		_e2, err2 := repo.Insert(*e2)
+		_e3, err3 := repo.Insert(*e3)
 
 		tt := []struct {
-			got      Entry
-			expected Entry
+			got      entryInfo
+			expected entryInfo
 		}{
-			{got: *_e1, expected: *e1},
-			{got: *_e2, expected: *e2},
-			{got: *_e3, expected: *e3},
+			{
+				got: entryInfo{
+					entry: _e1,
+					err:   err1,
+				},
+				expected: entryInfo{
+					entry: e1,
+					err:   nil,
+				},
+			},
+			{
+				got: entryInfo{
+					entry: _e2,
+					err:   err2,
+				},
+				expected: entryInfo{
+					entry: e2,
+					err:   nil,
+				},
+			},
+			{
+				got: entryInfo{
+					entry: _e3,
+					err:   err3,
+				},
+				expected: entryInfo{
+					entry: e3,
+					err:   nil,
+				},
+			},
 		}
 
 		for _, tc := range tt {
-			assertEntry(t, &tc.got, &tc.expected)
+			assertEntryInfo(t, tc.got, tc.expected)
 		}
 	})
 
@@ -168,7 +195,6 @@ func TestGetByUsername(t *testing.T) {
 	}
 
 	for _, tc := range tt {
-		assertError(t, tc.got.err, tc.expected.err)
-		assertEntry(t, tc.got.entry, tc.expected.entry)
+		assertEntryInfo(t, tc.got, tc.expected)
 	}
 }

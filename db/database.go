@@ -149,7 +149,7 @@ func (r *SQLiteRepository) Update(id int64, updated Entry) (*Entry, error) {
 }
 
 func (r *SQLiteRepository) Delete(id int64) error {
-	if id >= 0 {
+	if id <= 0 {
 		return ErrInvalidID
 	}
 

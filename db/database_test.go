@@ -42,12 +42,12 @@ func setup(t *testing.T) (*SQLiteRepository, func()) {
 
 	f, err := ioutil.TempFile("", "")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("could not create file: %q", err)
 	}
 
 	db, err := sql.Open("sqlite3", f.Name())
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("could not open sqlite db: %q", err)
 	}
 
 	teardown := func() {
@@ -55,7 +55,24 @@ func setup(t *testing.T) (*SQLiteRepository, func()) {
 	}
 
 	entryRepo := NewSQLiteRepository(db)
-	entryRepo.Initialize()
+	err = entryRepo.Initialize()
+
+	if err != nil {
+		log.Fatalf("could not initialize sqlite db: %q", err)
+	}
+
+	return entryRepo, teardown
+}
+
+func setupWithInserts(t *testing.T) (*SQLiteRepository, func()) {
+	entryRepo, teardown := setup(t)
+
+	_, err := entryRepo.Insert(*e1)
+	assertError(t, err, nil)
+	_, err = entryRepo.Insert(*e2)
+	assertError(t, err, nil)
+	_, err = entryRepo.Insert(*e3)
+	assertError(t, err, nil)
 
 	return entryRepo, teardown
 }
@@ -137,19 +154,10 @@ func TestInsert(t *testing.T) {
 }
 
 func TestAll(t *testing.T) {
-	repo, teardown := setup(t)
+	repo, teardown := setupWithInserts(t)
 	defer teardown()
 
-	_e1, err := repo.Insert(*e1)
-	assertError(t, err, nil)
-
-	_e2, err := repo.Insert(*e2)
-	assertError(t, err, nil)
-
-	_e3, err := repo.Insert(*e3)
-	assertError(t, err, nil)
-
-	entries := []Entry{*_e1, *_e2, *_e3}
+	entries := []Entry{*e1, *e2, *e3}
 
 	all, err := repo.All()
 	assertError(t, err, nil)
@@ -160,29 +168,26 @@ func TestAll(t *testing.T) {
 }
 
 func TestGetByUsername(t *testing.T) {
-	repo, teardown := setup(t)
+	repo, teardown := setupWithInserts(t)
 	defer teardown()
-
-	_e1, err := repo.Insert(*e1)
-	assertError(t, err, nil)
 
 	found, foundErr := repo.GetByUsername("username1")
 	notFound, notFoundErr := repo.GetByUsername("unknown user")
 
 	tt := []databaseTest{
 		{
-			description: "test known user",
+			description: "search known user",
 			got: entryInfo{
 				entry: found,
 				err:   foundErr,
 			},
 			expected: entryInfo{
-				entry: _e1,
+				entry: e1,
 				err:   nil,
 			},
 		},
 		{
-			description: "test unknown user",
+			description: "search unknown user",
 			got: entryInfo{
 				entry: notFound,
 				err:   notFoundErr,

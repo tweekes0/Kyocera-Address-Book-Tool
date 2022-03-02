@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// Test Entries
+// Entry literals for testing
 var (
 	e1 = Entry{
 		ID:       1,

@@ -19,6 +19,7 @@ type Entry struct {
 
 func NewEntry(id int64, name, username, email string) (*Entry, error) {
 	p := new(Entry)
+	p.ID = id
 	p.Name = name
 	p.Username = username
 	p.Email = email

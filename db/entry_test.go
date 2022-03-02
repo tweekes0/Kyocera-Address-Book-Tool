@@ -7,19 +7,19 @@ import (
 
 // Entry literals for testing
 var (
-	e1 = Entry{
+	e1 = &Entry{
 		ID:       1,
 		Name:     "Test 1",
 		Username: "username1",
 		Email:    "test1@test.com"}
 
-	e2 = Entry{
+	e2 = &Entry{
 		ID:       2,
 		Name:     "Test 2",
 		Username: "username2",
 		Email:    "test2@test.com"}
 
-	e3 = Entry{
+	e3 = &Entry{
 		ID:       3,
 		Name:     "Test 3",
 		Username: "username3",
@@ -36,12 +36,12 @@ func TestDisplay(t *testing.T) {
 	}{
 		{
 			description: "Entry 1",
-			got:         e1,
+			got:         *e1,
 			expect:      "ID: 1\nName: Test 1\nUsername: username1\nEmail: test1@test.com\n",
 		},
 		{
 			description: "Entry 2",
-			got:         e2,
+			got:         *e2,
 			expect:      "ID: 2\nName: Test 2\nUsername: username2\nEmail: test2@test.com\n",
 		},
 	}

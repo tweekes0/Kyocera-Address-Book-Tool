@@ -243,3 +243,45 @@ func TestUpdate(t *testing.T) {
 		assertEntryInfo(t, tc.got, tc.expected)
 	}
 }
+
+func TestDelete(t *testing.T) {
+	repo, teardown := setupWithInserts(t)
+	defer teardown()
+
+	foundErr := repo.Delete(1)
+	notFoundErr := repo.Delete(99999)
+
+	e, err := NewEntry(4, "Test 1", "username1", "test1@test.com")
+	assertError(t, err, nil)
+	
+	inserted, err := repo.Insert(*e)
+	assertEntry(t, inserted, e)
+	assertError(t, err, nil)
+
+	newFoundErr := repo.Delete(4)
+	tt := []struct {
+		description string
+		got         error
+		expected    error
+	}{
+		{
+			description: "delete known user",
+			got:         foundErr,
+			expected:    nil,
+		},
+		{
+			description: "delete unknown user",
+			got:         notFoundErr,
+			expected:    ErrDeleteFailed,
+		},
+		{
+			description: "delete user after insert",
+			got:         newFoundErr,
+			expected:    nil,
+		},
+	}
+
+	for _, tc := range tt {
+		assertError(t, tc.got, tc.expected)
+	}
+}

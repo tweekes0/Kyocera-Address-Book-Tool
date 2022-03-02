@@ -5,8 +5,21 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"reflect"
 	"testing"
 )
+ 
+func assertError(t testing.TB, got, expected error) {
+	if got != expected {
+		t.Fatalf("got: %q, expected: %q", got, expected)
+	}
+}
+
+func assertEntry(t testing.TB, got, expected Entry) {
+	if (!reflect.DeepEqual(got, expected)) {
+		t.Errorf("got: %v, expected: %v\n", got, expected)
+	}
+}
 
 func setup(t *testing.T) (*SQLiteRepository, func()) {
 	t.Parallel()
@@ -40,12 +53,10 @@ func TestInsert(t *testing.T) {
 		got, err := repo.Insert(e1)
 		assertError(t, err, nil)
 
-		want := 1
+		expected, _ := NewEntry(1, "Test 1" , "username1","test1@test.com")
 		assertError(t, err, nil)
 
-		if int(got.ID) != want {
-			t.Errorf("got: %d, expected: %d\n", got.ID, want)
-		}
+		assertEntry(t, *got, *expected)
 	})
 
 	t.Run("multiple inserts", func(t *testing.T) {
@@ -62,18 +73,16 @@ func TestInsert(t *testing.T) {
 		assertError(t, err, nil)
 
 		tt := []struct {
-			got      int
-			expected int
+			got      Entry
+			expected Entry
 		}{
-			{got: int(_e1.ID), expected: 1},
-			{got: int(_e2.ID), expected: 2},
-			{got: int(_e3.ID), expected: 3},
+			{got: *_e1, expected: e1},
+			{got: *_e2, expected: e2},
+			{got: *_e3, expected: e3},
 		}
 
 		for _, tc := range tt {
-			if tc.got != tc.expected {
-				t.Fatalf("got: %d, expected: %d", tc.got, tc.expected)
-			}
+			assertEntry(t, tc.got, tc.expected)
 		}
 	})
 
@@ -87,11 +96,4 @@ func TestInsert(t *testing.T) {
 		_, err = repo.Insert(e1)
 		assertError(t, err, ErrDuplicate)
 	})
-
-}
-
-func assertError(t testing.TB, got, expected error) {
-	if got != expected {
-		t.Fatalf("got: %q, expected: %q", got, expected)
-	}
 }

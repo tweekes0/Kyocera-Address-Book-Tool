@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"errors"
-	"log"
 
 	"github.com/mattn/go-sqlite3"
 )
@@ -71,7 +70,6 @@ func (r *SQLiteRepository) Insert(e Entry) (*Entry, error) {
 				return nil, ErrDuplicate
 			}
 		}
-		log.Fatal("Sad hood movie")
 		return nil, err
 	}
 

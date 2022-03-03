@@ -86,7 +86,7 @@ func TestInsert(t *testing.T) {
 		got, err := repo.Insert(*e1)
 		assertError(t, err, nil)
 
-		expected, _ := NewEntry(1, "Test 1", "username1", "test1@test.com")
+		expected, _ := NewEntry(1, "Test One", "username1", "test1@test.com")
 		assertError(t, err, nil)
 
 		assertEntry(t, got, expected)
@@ -208,7 +208,7 @@ func TestUpdate(t *testing.T) {
 	repo, teardown := setupWithInserts(t)
 	defer teardown()
 
-	updated, err := NewEntry(1, "new name", "new username", "newemail@test.com")
+	updated, err := NewEntry(1, "new name", "newUsername", "newemail@test.com")
 	assertError(t, err, nil)
 
 	found, foundErr := repo.Update(1, *updated)
@@ -251,7 +251,7 @@ func TestDelete(t *testing.T) {
 	foundErr := repo.Delete(1)
 	notFoundErr := repo.Delete(99999)
 
-	e, err := NewEntry(4, "Test 1", "username1", "test1@test.com")
+	e, err := NewEntry(4, "Test One", "username1", "test1@test.com")
 	assertError(t, err, nil)
 	
 	inserted, err := repo.Insert(*e)

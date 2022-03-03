@@ -9,19 +9,19 @@ import (
 var (
 	e1 = &Entry{
 		ID:       1,
-		Name:     "Test 1",
+		Name:     "Test One",
 		Username: "username1",
 		Email:    "test1@test.com"}
 
 	e2 = &Entry{
 		ID:       2,
-		Name:     "Test 2",
+		Name:     "Test Two",
 		Username: "username2",
 		Email:    "test2@test.com"}
 
 	e3 = &Entry{
 		ID:       3,
-		Name:     "Test 3",
+		Name:     "Test Three",
 		Username: "username3",
 		Email:    "test3@test.com"}
 )
@@ -37,12 +37,12 @@ func TestDisplay(t *testing.T) {
 		{
 			description: "Entry 1",
 			got:         *e1,
-			expect:      "ID: 1\nName: Test 1\nUsername: username1\nEmail: test1@test.com\n",
+			expect:      "ID: 1\nName: Test One\nUsername: username1\nEmail: test1@test.com\n",
 		},
 		{
 			description: "Entry 2",
 			got:         *e2,
-			expect:      "ID: 2\nName: Test 2\nUsername: username2\nEmail: test2@test.com\n",
+			expect:      "ID: 2\nName: Test Two\nUsername: username2\nEmail: test2@test.com\n",
 		},
 	}
 

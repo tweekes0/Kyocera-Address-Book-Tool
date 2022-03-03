@@ -43,9 +43,9 @@ func validateField(field, pattern string, err error) error {
 }
 
 func ValidateEntry(e *Entry) error {
-	const namePattern = "^[a-zA-Z]+([ ]?[a-zA-Z]{1,})*"
-	const usernamePattern = "^[a-zA-Z]+([\\._-]?[a-zA-Z0-9])*"
-	const emailPattern = "^[a-zA-Z]+([\\._-]?[a-zA-Z0-9])+@[a-zA-Z]+(\\.[a-zA-Z]+)+"
+	const namePattern = "^[a-zA-Z]+([ ]?[a-zA-Z]+)*$"
+	const usernamePattern = "^[a-zA-Z]+([\\._-]?[a-zA-Z0-9])*$"
+	const emailPattern = "^[a-zA-Z]+([\\._-]?[a-zA-Z0-9])+@[a-zA-Z]+(\\.[a-zA-Z]+)+$"
 
 	err := validateField(e.Name, namePattern, ErrInvalidName)
 	if err != nil {

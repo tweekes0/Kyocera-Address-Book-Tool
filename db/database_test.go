@@ -24,48 +24,17 @@ func TestInsert(t *testing.T) {
 		defer teardown()
 
 		_e1, err1 := repo.Insert(*e1)
+		assertEntry(t, _e1, e1)
+		assertError(t, err1, nil)
+
 		_e2, err2 := repo.Insert(*e2)
+		assertEntry(t, _e2, e2)
+		assertError(t, err2, nil)
+		
 		_e3, err3 := repo.Insert(*e3)
-
-		tt := []struct {
-			got      entryInfo
-			expected entryInfo
-		}{
-			{
-				got: entryInfo{
-					entry: _e1,
-					err:   err1,
-				},
-				expected: entryInfo{
-					entry: e1,
-					err:   nil,
-				},
-			},
-			{
-				got: entryInfo{
-					entry: _e2,
-					err:   err2,
-				},
-				expected: entryInfo{
-					entry: e2,
-					err:   nil,
-				},
-			},
-			{
-				got: entryInfo{
-					entry: _e3,
-					err:   err3,
-				},
-				expected: entryInfo{
-					entry: e3,
-					err:   nil,
-				},
-			},
-		}
-
-		for _, tc := range tt {
-			assertEntryInfo(t, tc.got, tc.expected)
-		}
+		assertEntry(t, _e3, e3)
+		assertError(t, err3, nil)
+		
 	})
 
 	t.Run("insert non-unique entry", func(t *testing.T) {
@@ -77,6 +46,26 @@ func TestInsert(t *testing.T) {
 
 		_, err = repo.Insert(*e1)
 		assertError(t, err, ErrDuplicate)
+	})
+
+	t.Run("insert into new table", func(t *testing.T) {
+		repo, teardown := setupWithInserts(t)
+		defer teardown()
+
+		err := repo.NewTable("new_table")
+		assertError(t, err, nil)
+
+		_e1, err1 := repo.Insert(*e1)
+		assertEntry(t, _e1, e1)
+		assertError(t, err1, nil)
+
+		_e2, err2 := repo.Insert(*e2)
+		assertEntry(t, _e2, e2)
+		assertError(t, err2, nil)
+		
+		_e3, err3 := repo.Insert(*e3)
+		assertEntry(t, _e3, e3)
+		assertError(t, err3, nil)
 	})
 }
 

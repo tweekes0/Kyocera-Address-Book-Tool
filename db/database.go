@@ -3,19 +3,23 @@ package db
 import (
 	"database/sql"
 	"errors"
-
 	"github.com/mattn/go-sqlite3"
+	"log"
+	"regexp"
+	"fmt"
+	"strings"
 )
 
 var (
-	ErrDuplicate       = errors.New("record already exists")
-	ErrNotFound        = errors.New("record does not exist")
-	ErrUpdateFailed    = errors.New("record could not be updated")
-	ErrDeleteFailed    = errors.New("record could not be deleted")
-	ErrInvalidID       = errors.New("record ID is invalid")
-	ErrInvalidEmail    = errors.New("email is not valid")
-	ErrInvalidName     = errors.New("name is not valid")
-	ErrInvalidUsername = errors.New("username is not valid")
+	ErrDuplicate        = errors.New("record already exists")
+	ErrNotFound         = errors.New("record does not exist")
+	ErrUpdateFailed     = errors.New("record could not be updated")
+	ErrDeleteFailed     = errors.New("record could not be deleted")
+	ErrInvalidID        = errors.New("record ID is invalid")
+	ErrInvalidEmail     = errors.New("email is not valid")
+	ErrInvalidName      = errors.New("name is not valid")
+	ErrInvalidUsername  = errors.New("username is not valid")
+	ErrInvalidTableName = errors.New("tablename is not valid")
 )
 
 type Repository interface {
@@ -50,11 +54,15 @@ func (r *SQLiteRepository) Initialize() error {
 
 	_, err := r.db.Exec(query)
 
+	if err != nil {
+		log.Fatalf("cannot create table: %q", err)
+	}
+
 	return err
 }
 
 func (r *SQLiteRepository) Insert(e Entry) (*Entry, error) {
-	err := ValidateEntry(&e) 
+	err := ValidateEntry(&e)
 
 	if err != nil {
 		return nil, err
@@ -166,6 +174,74 @@ func (r *SQLiteRepository) Delete(id int64) error {
 
 	if rowsAffected == 0 {
 		return ErrDeleteFailed
+	}
+
+	return nil
+}
+
+func (r *SQLiteRepository) NewTable(tableName string) error {
+	exist, err := r.tableExists(tableName)
+
+	if !exist {
+		query := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %v (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		name text NOT NULL,
+		username text UNIQUE NOT NULL, 
+		email text UNIQUE NOT NULL 
+		);`, tableName)
+
+		_, err := r.db.Exec(query, tableName)
+
+		if err != nil {
+			log.Fatalf("cannot create table: %q", err)
+		}
+
+		r.currentTable = tableName
+		return nil
+	}
+
+	return err
+}
+
+func (r *SQLiteRepository) SwitchTable(tableName string) error {
+	exists, err := r.tableExists(tableName)
+
+	if !exists {
+		r.currentTable = tableName
+		return nil
+	}
+
+	return err
+}
+
+func (r *SQLiteRepository) Exists(tableName string) (bool, error) {
+	return r.tableExists(tableName)
+}
+
+func (r *SQLiteRepository) tableExists(tableName string) (bool, error) {
+	err := validateTableName(tableName)
+
+	if err != nil {
+		return false, err
+	}
+
+	query := "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
+	rows, err := r.db.Query(query, tableName)
+
+	if err != nil {
+		log.Fatalf("cannot query database: %q", err)
+	}
+	defer rows.Close()
+
+	return rows.Next(), nil
+}
+
+func validateTableName(tableName string) error {
+	const tablePattern = "^[a-zA-Z]{2,}([-_]{1}[a-zA-Z0-9]+)*$"
+	re := regexp.MustCompile(tablePattern)
+
+	if !re.MatchString(tableName) || strings.Contains(tableName, "sqlite") {
+		return ErrInvalidTableName
 	}
 
 	return nil

@@ -10,19 +10,6 @@ import (
 	"strings"
 )
 
-var (
-	ErrDuplicate        = errors.New("record already exists")
-	ErrNotFound         = errors.New("record does not exist")
-	ErrUpdateFailed     = errors.New("record could not be updated")
-	ErrDeleteFailed     = errors.New("record could not be deleted")
-	ErrInvalidID        = errors.New("record ID is invalid")
-	ErrInvalidEmail     = errors.New("email is not valid")
-	ErrInvalidName      = errors.New("name is not valid")
-	ErrInvalidUsername  = errors.New("username is not valid")
-	ErrInvalidTableName = errors.New("tablename is not valid")
-	ErrTableExists      = errors.New("table already exists")
-)
-
 type Repository interface {
 	Initialize() error
 	Insert(e Entry) error
@@ -45,13 +32,7 @@ func NewSQLiteRepository(db *sql.DB) *SQLiteRepository {
 }
 
 func (r *SQLiteRepository) Initialize() error {
-	query := `
-		CREATE TABLE IF NOT EXISTS default_table(
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name text NOT NULL,
-		username text UNIQUE NOT NULL, 
-		email text UNIQUE NOT NULL 
-		);`
+	query := fmt.Sprintf(createTable, r.currentTable)
 
 	_, err := r.db.Exec(query)
 
@@ -68,9 +49,8 @@ func (r *SQLiteRepository) Insert(e Entry) (*Entry, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	res, err := r.db.Exec(`INSERT INTO default_table(name, username, email) 
-		values(?,?,?)`, e.Name, e.Username, e.Email)
+	query := fmt.Sprintf(insert, r.currentTable)
+	res, err := r.db.Exec(query, e.Name, e.Username, e.Email)
 
 	if err != nil {
 		var sqliteErr sqlite3.Error
@@ -92,7 +72,8 @@ func (r *SQLiteRepository) Insert(e Entry) (*Entry, error) {
 }
 
 func (r *SQLiteRepository) All() (all []Entry, e error) {
-	rows, err := r.db.Query("SELECT * FROM default_table")
+	query := fmt.Sprintf(selectAll, r.currentTable)
+	rows, err := r.db.Query(query)
 
 	if err != nil {
 		return nil, err
@@ -113,8 +94,8 @@ func (r *SQLiteRepository) All() (all []Entry, e error) {
 }
 
 func (r *SQLiteRepository) GetByUsername(username string) (*Entry, error) {
-	row := r.db.QueryRow("SELECT * FROM default_table WHERE username = ?",
-		username)
+	query := fmt.Sprintf(selectByUername, r.currentTable)
+	row := r.db.QueryRow(query, username)
 
 	var e Entry
 	err := row.Scan(&e.ID, &e.Name, &e.Username, &e.Email)
@@ -135,10 +116,8 @@ func (r *SQLiteRepository) Update(id int64, updated Entry) (*Entry, error) {
 		return nil, ErrInvalidID
 	}
 
-	res, err := r.db.Exec(`
-		UPDATE default_table SET name = ?, username = ?,
-		email = ? WHERE id = ?`, updated.Name, updated.Username,
-		updated.Email, id)
+	query := fmt.Sprintf(update, r.currentTable)
+	res, err := r.db.Exec(query, updated.Name, updated.Username, updated.Email, id)
 
 	if err != nil {
 		return nil, err
@@ -162,7 +141,8 @@ func (r *SQLiteRepository) Delete(id int64) error {
 		return ErrInvalidID
 	}
 
-	res, err := r.db.Exec("DELETE FROM default_table WHERE id = ?", id)
+	query := fmt.Sprintf(delete, r.currentTable)
+	res, err := r.db.Exec(query, id)
 	if err != nil {
 		return err
 	}
@@ -187,12 +167,7 @@ func (r *SQLiteRepository) NewTable(tableName string) error {
 		return err
 	}
 
-	query := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %v (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name text NOT NULL,
-		username text UNIQUE NOT NULL, 
-		email text UNIQUE NOT NULL 
-		);`, tableName)
+	query := fmt.Sprintf(createTable, tableName)
 
 	_, err = r.db.Exec(query, tableName)
 
@@ -226,8 +201,7 @@ func (r *SQLiteRepository) tableExists(tableName string) error {
 		return err
 	}
 
-	query := "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
-	rows, err := r.db.Query(query, tableName)
+	rows, err := r.db.Query(selectTables, tableName)
 
 	if err != nil {
 		log.Fatalf("cannot query database: %q", err)

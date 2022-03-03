@@ -9,17 +9,6 @@ import (
 	"testing"
 )
 
-type databaseTest struct {
-	description string
-	got         entryInfo
-	expected    entryInfo
-}
-
-type entryInfo struct {
-	entry *Entry
-	err   error
-}
-
 func assertError(t testing.TB, got, expected error) {
 	if got != expected {
 		t.Fatalf("got: %q, expected: %q", got, expected)

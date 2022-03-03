@@ -5,27 +5,6 @@ import (
 	"testing"
 )
 
-// Entry literals for testing
-var (
-	e1 = &Entry{
-		ID:       1,
-		Name:     "Test One",
-		Username: "username1",
-		Email:    "test1@test.com"}
-
-	e2 = &Entry{
-		ID:       2,
-		Name:     "Test Two",
-		Username: "username2",
-		Email:    "test2@test.com"}
-
-	e3 = &Entry{
-		ID:       3,
-		Name:     "Test Three",
-		Username: "username3",
-		Email:    "test3@test.com"}
-)
-
 func TestDisplay(t *testing.T) {
 	t.Parallel()
 

@@ -10,15 +10,14 @@ import (
 	"testing"
 )
 
-type entryTest struct {
-	description string
-	got         entryInfo
-	expected    entryInfo
-}
-
 type entryInfo struct {
 	entry *Entry
 	err   error
+}
+
+type tableInfo struct {
+	tableName string
+	err       error
 }
 
 const (
@@ -85,6 +84,13 @@ func assertEntry(t testing.TB, got, expected *Entry) {
 func assertEntryInfo(t testing.TB, got, expected entryInfo) {
 	assertError(t, got.err, expected.err)
 	assertEntry(t, got.entry, expected.entry)
+}
+
+func assertTableInfo(t testing.TB, got, expected tableInfo) {
+	assertError(t, got.err, expected.err)
+	if got.tableName != expected.tableName {
+		t.Errorf("got: %v, expected: %v", got.tableName, expected.tableName)
+	}
 }
 
 func setup(t *testing.T) (*SQLiteRepository, func()) {

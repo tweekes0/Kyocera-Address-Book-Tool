@@ -101,7 +101,11 @@ func TestGetByUsername(t *testing.T) {
 	found, foundErr := repo.GetByUsername("username1")
 	notFound, notFoundErr := repo.GetByUsername("unknown user")
 
-	tt := []entryTest{
+	tt := []struct {
+		description string
+		got         entryInfo
+		expected    entryInfo
+	}{
 		{
 			description: "search known user",
 			got: entryInfo{
@@ -143,7 +147,11 @@ func TestUpdate(t *testing.T) {
 	found, foundErr := repo.Update(1, *updated)
 	notFound, notFoundErr := repo.Update(999999, *updated)
 
-	tt := []entryTest{
+	tt := []struct {
+		description string
+		got         entryInfo
+		expected    entryInfo
+	}{
 		{
 			description: "update existing user",
 			got: entryInfo{
@@ -262,36 +270,41 @@ func TestSwitchTable(t *testing.T) {
 
 	err := repo.NewTable("another_table")
 	assertError(t, err, nil)
-	
+
 	err1 := repo.SwitchTable("another_table")
+	tn1 := repo.currentTable
+
 	err2 := repo.SwitchTable("non-existent-table")
+	tn2 := repo.currentTable
+
 	err3 := repo.SwitchTable("--Invalid_table--")
+	tn3 := repo.currentTable
 
 	tt := []struct {
 		description string
-		got error
-		expected error
-	} {
+		got         tableInfo
+		expected    tableInfo
+	}{
 		{
 			description: "switch to validate table",
-			got: err1,
-			expected: nil,
+			got:         tableInfo{tableName: tn1, err: err1},
+			expected:    tableInfo{tableName: "another_table", err: nil},
 		},
 		{
 			description: "switch to non-existent table",
-			got: err2,
-			expected: ErrTableDoesNotExist,
+			got:         tableInfo{tableName: tn2, err: err2},
+			expected:    tableInfo{tableName: "another_table", err: ErrTableDoesNotExist},
 		},
 		{
 			description: "switching to invalid table",
-			got: err3,
-			expected: ErrInvalidTableName,
+			got:         tableInfo{tableName: tn3, err: err3},
+			expected:    tableInfo{tableName: "another_table", err: ErrInvalidTableName},
 		},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.description, func(t *testing.T) {
-			assertError(t, tc.got, tc.expected)
+			assertTableInfo(t, tc.got, tc.expected)
 		})
 	}
 }

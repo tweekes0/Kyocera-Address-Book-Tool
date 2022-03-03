@@ -1,70 +1,8 @@
 package db
 
 import (
-	"database/sql"
-	"io/ioutil"
-	"log"
-	"os"
-	"reflect"
 	"testing"
 )
-
-func assertError(t testing.TB, got, expected error) {
-	if got != expected {
-		t.Fatalf("got: %q, expected: %q", got, expected)
-	}
-}
-
-func assertEntry(t testing.TB, got, expected *Entry) {
-	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("got: %v, expected: %v\n", got, expected)
-	}
-}
-
-func assertEntryInfo(t testing.TB, got, expected entryInfo) {
-	assertError(t, got.err, expected.err)
-	assertEntry(t, got.entry, expected.entry)
-}
-
-func setup(t *testing.T) (*SQLiteRepository, func()) {
-	t.Parallel()
-
-	f, err := ioutil.TempFile("", "")
-	if err != nil {
-		log.Fatalf("could not create file: %q", err)
-	}
-
-	db, err := sql.Open("sqlite3", f.Name())
-	if err != nil {
-		log.Fatalf("could not open sqlite db: %q", err)
-	}
-
-	teardown := func() {
-		os.Remove(f.Name())
-	}
-
-	entryRepo := NewSQLiteRepository(db)
-	err = entryRepo.Initialize()
-
-	if err != nil {
-		log.Fatalf("could not initialize sqlite db: %q", err)
-	}
-
-	return entryRepo, teardown
-}
-
-func setupWithInserts(t *testing.T) (*SQLiteRepository, func()) {
-	entryRepo, teardown := setup(t)
-
-	_, err := entryRepo.Insert(*e1)
-	assertError(t, err, nil)
-	_, err = entryRepo.Insert(*e2)
-	assertError(t, err, nil)
-	_, err = entryRepo.Insert(*e3)
-	assertError(t, err, nil)
-
-	return entryRepo, teardown
-}
 
 func TestInsert(t *testing.T) {
 
@@ -163,7 +101,7 @@ func TestGetByUsername(t *testing.T) {
 	found, foundErr := repo.GetByUsername("username1")
 	notFound, notFoundErr := repo.GetByUsername("unknown user")
 
-	tt := []databaseTest{
+	tt := []entryTest{
 		{
 			description: "search known user",
 			got: entryInfo{
@@ -189,7 +127,9 @@ func TestGetByUsername(t *testing.T) {
 	}
 
 	for _, tc := range tt {
-		assertEntryInfo(t, tc.got, tc.expected)
+		t.Run(tc.description, func(t *testing.T) {
+			assertEntryInfo(t, tc.got, tc.expected)
+		})
 	}
 }
 
@@ -203,7 +143,7 @@ func TestUpdate(t *testing.T) {
 	found, foundErr := repo.Update(1, *updated)
 	notFound, notFoundErr := repo.Update(999999, *updated)
 
-	tt := []databaseTest{
+	tt := []entryTest{
 		{
 			description: "update existing user",
 			got: entryInfo{
@@ -229,7 +169,9 @@ func TestUpdate(t *testing.T) {
 	}
 
 	for _, tc := range tt {
-		assertEntryInfo(t, tc.got, tc.expected)
+		t.Run(tc.description, func(t *testing.T) {
+			assertEntryInfo(t, tc.got, tc.expected)
+		})
 	}
 }
 
@@ -271,7 +213,9 @@ func TestDelete(t *testing.T) {
 	}
 
 	for _, tc := range tt {
-		assertError(t, tc.got, tc.expected)
+		t.Run(tc.description, func(t *testing.T) {
+			assertError(t, tc.got, tc.expected)
+		})
 	}
 }
 

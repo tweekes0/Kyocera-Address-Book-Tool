@@ -1,10 +1,16 @@
 package db
 
 import (
+	"database/sql"
 	"errors"
+	"io/ioutil"
+	"log"
+	"os"
+	"reflect"
+	"testing"
 )
 
-type databaseTest struct {
+type entryTest struct {
 	description string
 	got         entryInfo
 	expected    entryInfo
@@ -62,3 +68,60 @@ var (
 	ErrInvalidTableName = errors.New("tablename is not valid")
 	ErrTableExists      = errors.New("table already exists")
 )
+
+func assertError(t testing.TB, got, expected error) {
+	if got != expected {
+		t.Fatalf("got: %q, expected: %q", got, expected)
+	}
+}
+
+func assertEntry(t testing.TB, got, expected *Entry) {
+	if !reflect.DeepEqual(got, expected) {
+		t.Errorf("got: %v, expected: %v\n", got, expected)
+	}
+}
+
+func assertEntryInfo(t testing.TB, got, expected entryInfo) {
+	assertError(t, got.err, expected.err)
+	assertEntry(t, got.entry, expected.entry)
+}
+
+func setup(t *testing.T) (*SQLiteRepository, func()) {
+	t.Parallel()
+
+	f, err := ioutil.TempFile("", "")
+	if err != nil {
+		log.Fatalf("could not create file: %q", err)
+	}
+
+	db, err := sql.Open("sqlite3", f.Name())
+	if err != nil {
+		log.Fatalf("could not open sqlite db: %q", err)
+	}
+
+	teardown := func() {
+		os.Remove(f.Name())
+	}
+
+	entryRepo := NewSQLiteRepository(db)
+	err = entryRepo.Initialize()
+
+	if err != nil {
+		log.Fatalf("could not initialize sqlite db: %q", err)
+	}
+
+	return entryRepo, teardown
+}
+
+func setupWithInserts(t *testing.T) (*SQLiteRepository, func()) {
+	entryRepo, teardown := setup(t)
+
+	_, err := entryRepo.Insert(*e1)
+	assertError(t, err, nil)
+	_, err = entryRepo.Insert(*e2)
+	assertError(t, err, nil)
+	_, err = entryRepo.Insert(*e3)
+	assertError(t, err, nil)
+
+	return entryRepo, teardown
+}

@@ -73,13 +73,13 @@ func TestAll(t *testing.T) {
 	repo, teardown := setupWithInserts(t)
 	defer teardown()
 
-	entries := []Entry{*e1, *e2, *e3}
+	entries := []*Entry{e1, e2, e3}
 
 	all, err := repo.All()
 	assertError(t, err, nil)
 
 	for i, entry := range all {
-		assertEntry(t, &entries[i], &entry)
+		assertEntry(t, entries[i], &entry)
 	}
 }
 

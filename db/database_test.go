@@ -255,3 +255,43 @@ func TestNewTable(t *testing.T) {
 		})
 	}
 }
+
+func TestSwitchTable(t *testing.T) {
+	repo, teardown := setupWithInserts(t)
+	defer teardown()
+
+	err := repo.NewTable("another_table")
+	assertError(t, err, nil)
+	
+	err1 := repo.SwitchTable("another_table")
+	err2 := repo.SwitchTable("non-existent-table")
+	err3 := repo.SwitchTable("--Invalid_table--")
+
+	tt := []struct {
+		description string
+		got error
+		expected error
+	} {
+		{
+			description: "switch to validate table",
+			got: err1,
+			expected: nil,
+		},
+		{
+			description: "switch to non-existent table",
+			got: err2,
+			expected: ErrTableDoesNotExist,
+		},
+		{
+			description: "switching to invalid table",
+			got: err3,
+			expected: ErrInvalidTableName,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.description, func(t *testing.T) {
+			assertError(t, tc.got, tc.expected)
+		})
+	}
+}

@@ -253,7 +253,7 @@ func TestDelete(t *testing.T) {
 
 	e, err := NewEntry(4, "Test One", "username1", "test1@test.com")
 	assertError(t, err, nil)
-	
+
 	inserted, err := repo.Insert(*e)
 	assertEntry(t, inserted, e)
 	assertError(t, err, nil)
@@ -283,5 +283,42 @@ func TestDelete(t *testing.T) {
 
 	for _, tc := range tt {
 		assertError(t, tc.got, tc.expected)
+	}
+}
+
+func TestNewTable(t *testing.T) {
+	repo, teardown := setup(t)
+	defer teardown()
+
+	err1 := repo.NewTable("valid_table_name")
+	err2 := repo.NewTable("____invalid_table_name")
+	err3 := repo.NewTable("default_table")
+
+	tt := []struct {
+		description string
+		got         error
+		expected    error
+	}{
+		{
+			description: "create table with valid name",
+			got:         err1,
+			expected:    nil,
+		},
+		{
+			description: "create table with invalid name",
+			got:         err2,
+			expected:    ErrInvalidTableName,
+		},
+		{
+			description: "create table with a existing name",
+			got:         err3,
+			expected:    ErrTableExists,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.description, func(t *testing.T) {
+			assertError(t, tc.got, tc.expected)
+		})
 	}
 }

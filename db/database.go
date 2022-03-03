@@ -3,10 +3,10 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/mattn/go-sqlite3"
 	"log"
 	"regexp"
-	"fmt"
 	"strings"
 )
 
@@ -20,6 +20,7 @@ var (
 	ErrInvalidName      = errors.New("name is not valid")
 	ErrInvalidUsername  = errors.New("username is not valid")
 	ErrInvalidTableName = errors.New("tablename is not valid")
+	ErrTableExists      = errors.New("table already exists")
 )
 
 type Repository interface {
@@ -180,49 +181,49 @@ func (r *SQLiteRepository) Delete(id int64) error {
 }
 
 func (r *SQLiteRepository) NewTable(tableName string) error {
-	exist, err := r.tableExists(tableName)
+	err := r.tableExists(tableName)
 
-	if !exist {
-		query := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %v (
+	if err != nil {
+		return err
+	}
+
+	query := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %v (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name text NOT NULL,
 		username text UNIQUE NOT NULL, 
 		email text UNIQUE NOT NULL 
 		);`, tableName)
 
-		_, err := r.db.Exec(query, tableName)
+	_, err = r.db.Exec(query, tableName)
 
-		if err != nil {
-			log.Fatalf("cannot create table: %q", err)
-		}
-
-		r.currentTable = tableName
-		return nil
+	if err != nil {
+		log.Fatalf("cannot create table: %q", err)
 	}
 
-	return err
+	r.currentTable = tableName
+	return nil
 }
 
 func (r *SQLiteRepository) SwitchTable(tableName string) error {
-	exists, err := r.tableExists(tableName)
+	err := r.tableExists(tableName)
 
-	if !exists {
-		r.currentTable = tableName
-		return nil
+	if err != nil {
+		return err
 	}
 
-	return err
+	r.currentTable = tableName
+	return nil
 }
 
-func (r *SQLiteRepository) Exists(tableName string) (bool, error) {
+func (r *SQLiteRepository) Exists(tableName string) error {
 	return r.tableExists(tableName)
 }
 
-func (r *SQLiteRepository) tableExists(tableName string) (bool, error) {
+func (r *SQLiteRepository) tableExists(tableName string) error {
 	err := validateTableName(tableName)
 
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	query := "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
@@ -233,7 +234,11 @@ func (r *SQLiteRepository) tableExists(tableName string) (bool, error) {
 	}
 	defer rows.Close()
 
-	return rows.Next(), nil
+	if rows.Next() {
+		return ErrTableExists
+	}
+
+	return nil
 }
 
 func validateTableName(tableName string) error {

@@ -161,10 +161,14 @@ func (r *SQLiteRepository) Delete(id int64) error {
 }
 
 func (r *SQLiteRepository) NewTable(tableName string) error {
-	err := r.tableExists(tableName)
+	exists, err := r.tableExists(tableName)
 
 	if err != nil {
 		return err
+	}
+
+	if exists {
+		return ErrTableExists
 	}
 
 	query := fmt.Sprintf(createTable, tableName)
@@ -180,25 +184,29 @@ func (r *SQLiteRepository) NewTable(tableName string) error {
 }
 
 func (r *SQLiteRepository) SwitchTable(tableName string) error {
-	err := r.tableExists(tableName)
+	exists, err := r.tableExists(tableName)
 
 	if err != nil {
 		return err
+	}
+
+	if !exists {
+		return ErrTableDoesNotExist
 	}
 
 	r.currentTable = tableName
 	return nil
 }
 
-func (r *SQLiteRepository) Exists(tableName string) error {
+func (r *SQLiteRepository) Exists(tableName string) (bool, error) {
 	return r.tableExists(tableName)
 }
 
-func (r *SQLiteRepository) tableExists(tableName string) error {
+func (r *SQLiteRepository) tableExists(tableName string) (bool, error) {
 	err := validateTableName(tableName)
 
 	if err != nil {
-		return err
+		return false, ErrInvalidTableName
 	}
 
 	rows, err := r.db.Query(selectTables, tableName)
@@ -208,11 +216,7 @@ func (r *SQLiteRepository) tableExists(tableName string) error {
 	}
 	defer rows.Close()
 
-	if rows.Next() {
-		return ErrTableExists
-	}
-
-	return nil
+	return rows.Next(), nil
 }
 
 func validateTableName(tableName string) error {

@@ -57,16 +57,17 @@ var (
 )
 
 var (
-	ErrDuplicate        = errors.New("record already exists")
-	ErrNotFound         = errors.New("record does not exist")
-	ErrUpdateFailed     = errors.New("record could not be updated")
-	ErrDeleteFailed     = errors.New("record could not be deleted")
-	ErrInvalidID        = errors.New("record ID is invalid")
-	ErrInvalidEmail     = errors.New("email is not valid")
-	ErrInvalidName      = errors.New("name is not valid")
-	ErrInvalidUsername  = errors.New("username is not valid")
-	ErrInvalidTableName = errors.New("tablename is not valid")
-	ErrTableExists      = errors.New("table already exists")
+	ErrDuplicate         = errors.New("record already exists")
+	ErrNotFound          = errors.New("record does not exist")
+	ErrUpdateFailed      = errors.New("record could not be updated")
+	ErrDeleteFailed      = errors.New("record could not be deleted")
+	ErrInvalidID         = errors.New("record ID is invalid")
+	ErrInvalidEmail      = errors.New("email is not valid")
+	ErrInvalidName       = errors.New("name is not valid")
+	ErrInvalidUsername   = errors.New("username is not valid")
+	ErrInvalidTableName  = errors.New("tablename is not valid")
+	ErrTableExists       = errors.New("table already exists")
+	ErrTableDoesNotExist = errors.New("table does not exist")
 )
 
 func assertError(t testing.TB, got, expected error) {

@@ -37,6 +37,8 @@ const (
 		);`
 	clearTable  = "DELETE FROM %v"
 	deleteTable = "DROP TABLE %v"
+
+	DEFAULT_TABLE = "default_table"
 )
 
 var (

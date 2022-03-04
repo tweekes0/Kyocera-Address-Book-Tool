@@ -153,7 +153,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
-			description: "update non-existent user",
+			description: "update non-existing user",
 			got: entryInfo{
 				entry: notFound,
 				err:   notFoundErr,
@@ -222,7 +222,7 @@ func TestNewTable(t *testing.T) {
 
 	err1 := repo.NewTable("valid_table_name")
 	err2 := repo.NewTable("____invalid_table_name")
-	err3 := repo.NewTable("default_table")
+	err3 := repo.NewTable(DEFAULT_TABLE)
 
 	tt := []struct {
 		description string
@@ -263,7 +263,7 @@ func TestSwitchTable(t *testing.T) {
 	err1 := repo.SwitchTable("another_table")
 	tn1 := repo.currentTable
 
-	err2 := repo.SwitchTable("non-existent-table")
+	err2 := repo.SwitchTable("non-existing-table")
 	tn2 := repo.currentTable
 
 	err3 := repo.SwitchTable("--Invalid_table--")
@@ -280,7 +280,7 @@ func TestSwitchTable(t *testing.T) {
 			expected:    tableInfo{tableName: "another_table", err: nil},
 		},
 		{
-			description: "switch to non-existent table",
+			description: "switch to non-existing table",
 			got:         tableInfo{tableName: tn2, err: err2},
 			expected:    tableInfo{tableName: "another_table", err: ErrTableDoesNotExist},
 		},
@@ -305,10 +305,10 @@ func TestTableExists(t *testing.T) {
 	err := repo.NewTable("new_table")
 	assertError(t, err, nil)
 
-	_, err1 := repo.TableExists("default_table")
+	_, err1 := repo.TableExists(DEFAULT_TABLE)
 	_, err2 := repo.TableExists("new_table")
 	_, err3 := repo.TableExists(";--invalid_table;--")
-	_, err4 := repo.TableExists("non-existent-table")
+	_, err4 := repo.TableExists("non-existing-table")
 
 	tt := []struct {
 		description string
@@ -331,7 +331,7 @@ func TestTableExists(t *testing.T) {
 			expected: ErrInvalidTableName,
 		},
 		{
-			description: "non-existent table exists",
+			description: "non-existing table exists",
 			got: err4,
 			expected: ErrTableDoesNotExist,
 		},
@@ -357,4 +357,67 @@ func TestClearTable(t *testing.T) {
 			t.Errorf("got: %v, expected: %v", got, expected )
 		}
 	})
+}
+
+func TestDeleteTable(t *testing.T) {
+	repo, teardown := setup(t)
+	defer teardown()
+
+	err := repo.NewTable("another_table")
+	assertError(t, err, nil)
+
+	t1 := repo.currentTable
+	err1 := repo.DeleteTable("another_table")
+
+	t2 := repo.currentTable	
+	err2 := repo.DeleteTable(DEFAULT_TABLE)
+	
+	t3 := repo.currentTable
+	err3 := repo.DeleteTable("non-existing_table")
+
+	tt := []struct {
+		description string
+		got tableInfo
+		expected tableInfo
+	} {
+		{
+			description: "delete existing table",
+			got: tableInfo{
+				tableName: t1,
+				err: err1,
+			}, 
+			expected: tableInfo{
+				tableName: "another_table",
+				err: nil,
+			},
+		}, 
+		{
+			description: "delete default table",
+			got: tableInfo{
+				tableName: t2,
+				err: err2,
+			}, 
+			expected: tableInfo{
+				tableName: DEFAULT_TABLE,
+				err: ErrTableCannotBeDeleted,
+			},
+		}, 
+		{
+			description: "delete non-existing table",
+			got: tableInfo{
+				tableName: t3,
+				err: err3,
+			}, 
+			expected: tableInfo{
+				tableName: DEFAULT_TABLE,
+				err: ErrTableDoesNotExist,
+			},
+		}, 
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.description, func(t *testing.T) {
+			assertTableInfo(t, tc.got, tc.expected)
+		})
+	}
 }

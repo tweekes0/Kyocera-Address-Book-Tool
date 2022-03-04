@@ -25,7 +25,7 @@ type SQLiteRepository struct {
 func NewSQLiteRepository(db *sql.DB) *SQLiteRepository {
 	return &SQLiteRepository{
 		db:           db,
-		currentTable: "default_table",
+		currentTable: DEFAULT_TABLE,
 	}
 }
 
@@ -115,14 +115,13 @@ func (r *SQLiteRepository) Update(id int64, updated Entry) (*Entry, error) {
 	}
 
 	query := fmt.Sprintf(update, r.currentTable)
-	res, err := r.db.Exec(query, updated.Name, updated.Username, updated.Email, id)
 
+	res, err := r.db.Exec(query, updated.Name, updated.Username, updated.Email, id)
 	if err != nil {
 		return nil, err
 	}
 
 	rowsAffected, err := res.RowsAffected()
-
 	if err != nil {
 		return nil, err
 	}
@@ -140,13 +139,13 @@ func (r *SQLiteRepository) Delete(id int64) error {
 	}
 
 	query := fmt.Sprintf(delete, r.currentTable)
+
 	res, err := r.db.Exec(query, id)
 	if err != nil {
 		return err
 	}
 
 	rowsAffected, err := res.RowsAffected()
-
 	if err != nil {
 		return err
 	}
@@ -172,7 +171,6 @@ func (r *SQLiteRepository) NewTable(tableName string) error {
 	query := fmt.Sprintf(createTable, tableName)
 
 	_, err = r.db.Exec(query, tableName)
-
 	if err != nil {
 		log.Fatalf("cannot create table: %q", err)
 	}
@@ -183,7 +181,6 @@ func (r *SQLiteRepository) NewTable(tableName string) error {
 
 func (r *SQLiteRepository) SwitchTable(tableName string) error {
 	exists, err := r.TableExists(tableName)
-
 	if err != nil {
 		return err
 	}
@@ -197,10 +194,9 @@ func (r *SQLiteRepository) SwitchTable(tableName string) error {
 }
 
 func (r *SQLiteRepository) ClearTable() error {
-
 	query := fmt.Sprintf(clearTable, r.currentTable)
-	_, err := r.db.Exec(query)
 
+	_, err := r.db.Exec(query)
 	if err != nil {
 		log.Fatalf("could not drop table: %q", err)
 	}
@@ -230,24 +226,25 @@ func (r *SQLiteRepository) TableExists(tableName string) (bool, error) {
 }
 
 func (r *SQLiteRepository) DeleteTable(tableName string) error {
-	err := validateTableName(tableName)
+	_, err := r.TableExists(tableName)
 
 	if err != nil {
 		return err
 	}
 
-	if tableName == "default_table" {
+	if tableName == DEFAULT_TABLE {
 		return ErrTableCannotBeDeleted
 	}
 
 	if r.currentTable == tableName {
-		r.currentTable = "default_table"
+		r.currentTable = DEFAULT_TABLE
 	}
 
 	query := fmt.Sprintf(deleteTable, tableName)
+
 	_, err = r.db.Exec(query)
 	if err != nil {
-		log.Fatalf("cannot delete table: %q", err)
+		return ErrTableCannotBeDeleted
 	}
 
 	return nil

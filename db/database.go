@@ -228,3 +228,27 @@ func (r *SQLiteRepository) TableExists(tableName string) (bool, error) {
 
 	return false, ErrTableDoesNotExist
 }
+
+func (r *SQLiteRepository) DeleteTable(tableName string) error {
+	err := validateTableName(tableName)
+
+	if err != nil {
+		return err
+	}
+
+	if tableName == "default_table" {
+		return ErrTableCannotBeDeleted
+	}
+
+	if r.currentTable == tableName {
+		r.currentTable = "default_table"
+	}
+
+	query := fmt.Sprintf(deleteTable, tableName)
+	_, err = r.db.Exec(query)
+	if err != nil {
+		log.Fatalf("cannot delete table: %q", err)
+	}
+
+	return nil
+}

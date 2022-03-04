@@ -159,7 +159,7 @@ func (r *SQLiteRepository) Delete(id int64) error {
 }
 
 func (r *SQLiteRepository) NewTable(tableName string) error {
-	exists, err := r.tableExists(tableName)
+	exists, err := r.TableExists(tableName)
 
 	if err != nil && !errors.Is(err, ErrTableDoesNotExist) {
 		return err
@@ -182,7 +182,7 @@ func (r *SQLiteRepository) NewTable(tableName string) error {
 }
 
 func (r *SQLiteRepository) SwitchTable(tableName string) error {
-	exists, err := r.tableExists(tableName)
+	exists, err := r.TableExists(tableName)
 
 	if err != nil {
 		return err
@@ -194,10 +194,6 @@ func (r *SQLiteRepository) SwitchTable(tableName string) error {
 
 	r.currentTable = tableName
 	return nil
-}
-
-func (r *SQLiteRepository) Exists(tableName string) (bool, error) {
-	return r.tableExists(tableName)
 }
 
 func (r *SQLiteRepository) ClearTable() error {
@@ -212,7 +208,7 @@ func (r *SQLiteRepository) ClearTable() error {
 	return nil
 }
 
-func (r *SQLiteRepository) tableExists(tableName string) (bool, error) {
+func (r *SQLiteRepository) TableExists(tableName string) (bool, error) {
 	err := validateTableName(tableName)
 
 	if err != nil {

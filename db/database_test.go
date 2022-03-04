@@ -298,17 +298,17 @@ func TestSwitchTable(t *testing.T) {
 	}
 }
 
-func TestExists(t *testing.T) {
+func TestTableExists(t *testing.T) {
 	repo, teardown := setup(t)
 	defer teardown()
 
 	err := repo.NewTable("new_table")
 	assertError(t, err, nil)
 
-	_, err1 := repo.Exists("default_table")
-	_, err2 := repo.Exists("new_table")
-	_, err3 := repo.Exists(";--invalid_table;--")
-	_, err4 := repo.Exists("non-existent-table")
+	_, err1 := repo.TableExists("default_table")
+	_, err2 := repo.TableExists("new_table")
+	_, err3 := repo.TableExists(";--invalid_table;--")
+	_, err4 := repo.TableExists("non-existent-table")
 
 	tt := []struct {
 		description string
@@ -316,22 +316,22 @@ func TestExists(t *testing.T) {
 		expected error
 	} {
 		{
-			description: "check if default table exists",
+			description: "default table exists",
 			got: err1,
 			expected: nil,
 		},
 		{
-			description: "check if newly created table exists",
+			description: "newly created table exists",
 			got: err2,
 			expected: nil,
 		},
 		{
-			description: "check if invalid table exists",
+			description: "invalid table exists",
 			got: err3,
 			expected: ErrInvalidTableName,
 		},
 		{
-			description: "check if non-existent table exists",
+			description: "non-existent table exists",
 			got: err4,
 			expected: ErrTableDoesNotExist,
 		},

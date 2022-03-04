@@ -8,19 +8,24 @@ import (
 	"log"
 )
 
-type Repository interface {
-	Initialize() error
-	Insert(e Entry) error
-	All() ([]Entry, error)
-	GetByUsername(username string) (*Entry, error)
-	Update(id int64, update Entry) (*Entry, error)
-	Delete(id int64) error
-}
+/*
+	SQLiteRepository struct abstracts SQLite database
+
+	db: reference to a database, enabling db operations
+	currentTable: the table that certain statements will be ran against
+*/
 
 type SQLiteRepository struct {
 	db           *sql.DB
 	currentTable string
 }
+
+/*
+	SQLiteRepository struct constructor
+
+	Given a proper SQL database reference. A reference to a new SQLiteRepository
+	will be returned.
+*/
 
 func NewSQLiteRepository(db *sql.DB) *SQLiteRepository {
 	return &SQLiteRepository{
@@ -29,8 +34,14 @@ func NewSQLiteRepository(db *sql.DB) *SQLiteRepository {
 	}
 }
 
+/*
+	Createas the default table. 
+	
+	Logs to console and terminates execution if there is an issue with SQL
+*/
+
 func (r *SQLiteRepository) Initialize() error {
-	query := fmt.Sprintf(createTable, r.currentTable)
+	query := fmt.Sprintf(createTable, DEFAULT_TABLE)
 
 	_, err := r.db.Exec(query)
 
@@ -41,12 +52,19 @@ func (r *SQLiteRepository) Initialize() error {
 	return err
 }
 
-func (r *SQLiteRepository) Insert(e Entry) (*Entry, error) {
-	err := ValidateEntry(&e)
+/*
+	Inserts en Entry into currentTable and returns the reference of the Entry 
+	with an ID given to it from the database.
 
+	Logs to console and terminates execution if there is an issue with SQLer
+*/
+
+func (r *SQLiteRepository) Insert(e Entry) (*Entry, error) {
+	err := validateEntry(&e)
 	if err != nil {
 		return nil, err
 	}
+
 	query := fmt.Sprintf(insert, r.currentTable)
 	res, err := r.db.Exec(query, e.Name, e.Username, e.Email)
 
@@ -57,7 +75,7 @@ func (r *SQLiteRepository) Insert(e Entry) (*Entry, error) {
 				return nil, ErrDuplicate
 			}
 		}
-		return nil, err
+		log.Fatalf("cannot insert record into table: %q", err)
 	}
 
 	id, err := res.LastInsertId()
@@ -69,20 +87,26 @@ func (r *SQLiteRepository) Insert(e Entry) (*Entry, error) {
 	return &e, nil
 }
 
-func (r *SQLiteRepository) All() (all []Entry, e error) {
+/*
+	Queries currentTable return all the Entries  
+
+	Logs to console and terminates execution if there is an issue with SQL
+*/
+
+func (r *SQLiteRepository) All() (all []*Entry, err error) {
 	query := fmt.Sprintf(selectAll, r.currentTable)
 	rows, err := r.db.Query(query)
 
 	if err != nil {
-		return nil, err
+		log.Fatalf("cannot query table: %q", err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var e Entry
-		err := rows.Scan(&e.ID, &e.Name, &e.Username, &e.Email)
+		var e *Entry
+		err := rows.Scan(e.ID, e.Name, e.Username, e.Email)
 		if err != nil {
-			return nil, err
+			log.Fatalf("cannot scan row: %q", err)
 		}
 
 		all = append(all, e)
@@ -91,47 +115,78 @@ func (r *SQLiteRepository) All() (all []Entry, e error) {
 	return all, nil
 }
 
+/*
+	Queries currentTable to return a reference to an Entry when given a valid
+	username.
+
+	Logs to console and terminates execution if there is an issue with SQL
+*/
+
 func (r *SQLiteRepository) GetByUsername(username string) (*Entry, error) {
+	err := validateField(username, usernamePattern, ErrInvalidUsername)
+	if err != nil {
+		return nil, err
+	}
+	
 	query := fmt.Sprintf(selectByUername, r.currentTable)
 	row := r.db.QueryRow(query, username)
 
-	var e Entry
-	err := row.Scan(&e.ID, &e.Name, &e.Username, &e.Email)
+	var e *Entry
+	err = row.Scan(&e.ID, &e.Name, &e.Username, &e.Email)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNotFound
 		}
-
-		return nil, err
 	}
 
-	return &e, nil
+	return e, nil
 }
 
-func (r *SQLiteRepository) Update(id int64, updated Entry) (*Entry, error) {
+/*
+	Updates an Entry in the currentTable given it's id with the newly 
+	updated Entry. Returns the updated entry if there are no issues. 
+	If there are no updates no Entry is returned and corresponding 
+	error is returned also.
+
+	Logs error to console and terminates execution if there is an issue with the 
+	SQL.
+*/
+
+func (r *SQLiteRepository) Update(id int64, updated *Entry) (*Entry, error) {
 	if id <= 0 {
 		return nil, ErrInvalidID
+	}
+
+	err := validateEntry(updated) 
+	if err != nil {
+		return nil, err
 	}
 
 	query := fmt.Sprintf(update, r.currentTable)
 
 	res, err := r.db.Exec(query, updated.Name, updated.Username, updated.Email, id)
 	if err != nil {
-		return nil, err
+		log.Fatalf("cannot execute statement: %q", err)
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return nil, err
+		log.Fatalf("cannot update record: %q", err)
 	}
 
 	if rowsAffected == 0 {
 		return nil, ErrUpdateFailed
 	}
 
-	return &updated, nil
+	return updated, nil
 }
+
+/*
+	Deletes an Entry in the currentTable given a valid id.
+
+	Logs to console and terminates execution if there is an issue with SQL
+*/
 
 func (r *SQLiteRepository) Delete(id int64) error {
 	if id <= 0 {
@@ -157,6 +212,13 @@ func (r *SQLiteRepository) Delete(id int64) error {
 	return nil
 }
 
+/*
+	Creates a new table within the database. currentTable is updated if the 
+	table is valid and does not already exist.
+
+	Logs to console and terminates execution if there is an issue with SQL
+*/
+
 func (r *SQLiteRepository) NewTable(tableName string) error {
 	exists, err := r.TableExists(tableName)
 
@@ -179,6 +241,13 @@ func (r *SQLiteRepository) NewTable(tableName string) error {
 	return nil
 }
 
+/*
+	Updates the currentTable variable to to the tableName parameter given the
+	table exists and has a valid name.
+
+	Logs to console and terminates execution if there is an issue with SQL
+*/
+
 func (r *SQLiteRepository) SwitchTable(tableName string) error {
 	exists, err := r.TableExists(tableName)
 	if err != nil {
@@ -193,6 +262,11 @@ func (r *SQLiteRepository) SwitchTable(tableName string) error {
 	return nil
 }
 
+/*
+	Wipes the current table.
+
+	Logs to console and terminates execution if there is an issue with SQL
+*/
 func (r *SQLiteRepository) ClearTable() error {
 	query := fmt.Sprintf(clearTable, r.currentTable)
 
@@ -203,6 +277,14 @@ func (r *SQLiteRepository) ClearTable() error {
 
 	return nil
 }
+
+/*
+	Checks for the existence of a the given tableName and will return a bool
+	for the table's existence. If the table does not exist an error will be 
+	returned to the caller as to why not.
+
+	Logs to console and terminates execution if there is an issue with SQL
+*/
 
 func (r *SQLiteRepository) TableExists(tableName string) (bool, error) {
 	err := validateTableName(tableName)
@@ -224,6 +306,11 @@ func (r *SQLiteRepository) TableExists(tableName string) (bool, error) {
 
 	return false, ErrTableDoesNotExist
 }
+
+/*
+	Delete the table from the database that is passed. This function cannot and
+	will not delete the DEFAULT_TABLE.
+*/
 
 func (r *SQLiteRepository) DeleteTable(tableName string) error {
 	_, err := r.TableExists(tableName)

@@ -79,7 +79,7 @@ func TestAll(t *testing.T) {
 	assertError(t, err, nil)
 
 	for i, entry := range all {
-		assertEntry(t, entries[i], &entry)
+		assertEntry(t, entries[i], entry)
 	}
 }
 
@@ -133,8 +133,8 @@ func TestUpdate(t *testing.T) {
 	updated, err := NewEntry(1, "new name", "newUsername", "newemail@test.com")
 	assertError(t, err, nil)
 
-	found, foundErr := repo.Update(1, *updated)
-	notFound, notFoundErr := repo.Update(999999, *updated)
+	found, foundErr := repo.Update(1, updated)
+	notFound, notFoundErr := repo.Update(999999, updated)
 
 	tt := []struct {
 		description string

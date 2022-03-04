@@ -6,9 +6,14 @@ import (
 	"regexp"
 )
 
-type BasicEntry interface {
-	Display()
-}
+/*
+	Entry struct models how data will be inserted into database.
+	
+	ID: a unique id of the Entry's record in the database,
+	Name: the owner of the entry 
+	Username: unique identifier for the entry
+	Email: email address of the Entry's owner
+*/
 
 type Entry struct {
 	ID       int64
@@ -17,6 +22,25 @@ type Entry struct {
 	Email    string
 }
 
+/*
+	A receiver function for Entry to be written to an io.Writer
+
+	writer: an output stream where the properties of the entry can be written
+*/
+
+func (e *Entry) Display(writer io.Writer) {
+	fmt.Fprintf(writer, "ID: %d\nName: %v\nUsername: %v\nEmail: %v\n",
+		e.ID, e.Name, e.Username, e.Email)
+}
+
+/*
+	Entry struct constructor.
+
+	Given the proper parameters, a new Entry pointer will be returned. If there
+	is an issue with any of the fields nil will be returned with the 
+	corresponding error. 
+*/
+
 func NewEntry(id int64, name, username, email string) (*Entry, error) {
 	p := new(Entry)
 	p.ID = id
@@ -24,13 +48,22 @@ func NewEntry(id int64, name, username, email string) (*Entry, error) {
 	p.Username = username
 	p.Email = email
 
-	err := ValidateEntry(p)
+	err := validateEntry(p)
 	if err != nil {
 		return nil, err
 	}
 
 	return p, err
 }
+
+/*
+	Function to ensure that the fields in the Entry struct conform to a specific
+	pattern.
+
+	field: a string value from the Entry struct
+	pattern: a pattern that the field must meet
+	err: The error to be return if the field fails to conform to the pattern
+*/
 
 func validateField(field, pattern string, err error) error {
 	r := regexp.MustCompile(pattern)
@@ -42,10 +75,14 @@ func validateField(field, pattern string, err error) error {
 	return nil
 }
 
-func ValidateEntry(e *Entry) error {
-	const namePattern = "^[a-zA-Z]+([ ]?[a-zA-Z]+)*$"
-	const usernamePattern = "^[a-zA-Z]+([\\._-]?[a-zA-Z0-9])*$"
-	const emailPattern = "^[a-zA-Z]+([\\._-]?[a-zA-Z0-9])+@[a-zA-Z]+(\\.[a-zA-Z]+)+$"
+/*
+	Function that checks all the string fields of a given Entry. If a field 
+	fails to conform to its pattern a corresponding error is returned.
+
+	e: Pointer for an Entry that is to be checked.
+*/
+
+func validateEntry(e *Entry) error {
 
 	err := validateField(e.Name, namePattern, ErrInvalidName)
 	if err != nil {
@@ -63,9 +100,4 @@ func ValidateEntry(e *Entry) error {
 	}
 
 	return nil
-}
-
-func (e Entry) Display(writer io.Writer) {
-	fmt.Fprintf(writer, "ID: %d\nName: %v\nUsername: %v\nEmail: %v\n",
-		e.ID, e.Name, e.Username, e.Email)
 }

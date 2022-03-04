@@ -39,6 +39,10 @@ const (
 	deleteTable = "DROP TABLE %v"
 
 	DEFAULT_TABLE = "default_table"
+
+	namePattern = "^[a-zA-Z]+([ ]?[a-zA-Z]+)*$"
+	usernamePattern = "^[a-zA-Z]+([\\._-]?[a-zA-Z0-9])*$"
+	emailPattern = "^[a-zA-Z]+([\\._-]?[a-zA-Z0-9])+@[a-zA-Z]+(\\.[a-zA-Z]+)+$"
 )
 
 var (

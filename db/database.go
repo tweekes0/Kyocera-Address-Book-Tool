@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"github.com/mattn/go-sqlite3"
 	"log"
-	"regexp"
-	"strings"
 )
 
 type Repository interface {
@@ -202,6 +200,18 @@ func (r *SQLiteRepository) Exists(tableName string) (bool, error) {
 	return r.tableExists(tableName)
 }
 
+func (r *SQLiteRepository) ClearTable() error {
+
+	query := fmt.Sprintf(clearTable, r.currentTable)
+	_, err := r.db.Exec(query)
+
+	if err != nil {
+		log.Fatalf("could not drop table: %q", err)
+	}
+
+	return nil
+}
+
 func (r *SQLiteRepository) tableExists(tableName string) (bool, error) {
 	err := validateTableName(tableName)
 
@@ -217,15 +227,4 @@ func (r *SQLiteRepository) tableExists(tableName string) (bool, error) {
 	defer rows.Close()
 
 	return rows.Next(), nil
-}
-
-func validateTableName(tableName string) error {
-	const tablePattern = "^[a-zA-Z]{2,}([-_]{1}[a-zA-Z0-9]+)*$"
-	re := regexp.MustCompile(tablePattern)
-
-	if !re.MatchString(tableName) || strings.Contains(tableName, "sqlite") {
-		return ErrInvalidTableName
-	}
-
-	return nil
 }

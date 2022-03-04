@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -33,6 +35,7 @@ const (
 		username text UNIQUE NOT NULL, 
 		email text UNIQUE NOT NULL 
 		);`
+	clearTable = "DELETE FROM %v"
 )
 
 var (
@@ -131,4 +134,15 @@ func setupWithInserts(t *testing.T) (*SQLiteRepository, func()) {
 	assertError(t, err, nil)
 
 	return entryRepo, teardown
+}
+
+func validateTableName(tableName string) error {
+	const tablePattern = "^[a-zA-Z]{2,}([-_]{1}[a-zA-Z0-9]+)*$"
+	re := regexp.MustCompile(tablePattern)
+
+	if !re.MatchString(tableName) || strings.Contains(tableName, "sqlite") {
+		return ErrInvalidTableName
+	}
+
+	return nil
 }

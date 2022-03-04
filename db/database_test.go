@@ -297,3 +297,64 @@ func TestSwitchTable(t *testing.T) {
 		})
 	}
 }
+
+func TestExists(t *testing.T) {
+	repo, teardown := setup(t)
+	defer teardown()
+
+	err := repo.NewTable("new_table")
+	assertError(t, err, nil)
+
+	_, err1 := repo.Exists("default_table")
+	_, err2 := repo.Exists("new_table")
+	_, err3 := repo.Exists(";--invalid_table;--")
+	_, err4 := repo.Exists("non-existent-table")
+
+	tt := []struct {
+		description string
+		got error
+		expected error
+	} {
+		{
+			description: "check if default table exists",
+			got: err1,
+			expected: nil,
+		},
+		{
+			description: "check if newly created table exists",
+			got: err2,
+			expected: nil,
+		},
+		{
+			description: "check if invalid table exists",
+			got: err3,
+			expected: ErrInvalidTableName,
+		},
+		{
+			description: "check if non-existent table exists",
+			got: err4,
+			expected: ErrTableDoesNotExist,
+		},
+	}
+
+	for _,tc := range tt {
+		assertError(t, tc.got, tc.expected)
+	}
+}
+
+func TestClearTable(t *testing.T) {
+	repo, teardown := setupWithInserts(t)
+	defer teardown()
+
+	t.Run("clear table", func(t *testing.T) {
+		repo.ClearTable()
+		
+		got, err := repo.All()
+		expected :=  []*Entry{}
+		assertError(t, err, nil)	
+
+		if len(got) != 0 {
+			t.Errorf("got: %v, expected: %v", got, expected )
+		}
+	})
+}

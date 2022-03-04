@@ -161,7 +161,7 @@ func (r *SQLiteRepository) Delete(id int64) error {
 func (r *SQLiteRepository) NewTable(tableName string) error {
 	exists, err := r.tableExists(tableName)
 
-	if err != nil {
+	if err != nil && !errors.Is(err, ErrTableDoesNotExist) {
 		return err
 	}
 
@@ -226,5 +226,9 @@ func (r *SQLiteRepository) tableExists(tableName string) (bool, error) {
 	}
 	defer rows.Close()
 
-	return rows.Next(), nil
+	if rows.Next() {
+		return true, nil
+	}
+
+	return false, ErrTableDoesNotExist
 }

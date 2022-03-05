@@ -88,15 +88,16 @@ func TestGetByUsername(t *testing.T) {
 	defer teardown()
 
 	found, foundErr := repo.GetByUsername("username1")
-	notFound, notFoundErr := repo.GetByUsername("unknown user")
-
+	notFound, notFoundErr := repo.GetByUsername("unknown_user")
+	invalid, invalidErr	:= repo.GetByUsername("invalid user")
+	
 	tt := []struct {
 		description string
 		got         entryInfo
 		expected    entryInfo
 	}{
 		{
-			description: "search known user",
+			description: "query known user",
 			got: entryInfo{
 				entry: found,
 				err:   foundErr,
@@ -107,7 +108,7 @@ func TestGetByUsername(t *testing.T) {
 			},
 		},
 		{
-			description: "search unknown user",
+			description: "query unknown user",
 			got: entryInfo{
 				entry: notFound,
 				err:   notFoundErr,
@@ -115,6 +116,17 @@ func TestGetByUsername(t *testing.T) {
 			expected: entryInfo{
 				entry: nil,
 				err:   ErrNotFound,
+			},
+		},
+		{
+			description: "query invalid user",
+			got: entryInfo{
+				entry: invalid,
+				err:   invalidErr,
+			},
+			expected: entryInfo{
+				entry: nil,
+				err:   ErrInvalidUsername,
 			},
 		},
 	}

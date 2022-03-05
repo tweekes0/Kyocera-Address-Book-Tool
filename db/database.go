@@ -103,13 +103,13 @@ func (r *SQLiteRepository) All() (all []*Entry, err error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var e *Entry
-		err := rows.Scan(e.ID, e.Name, e.Username, e.Email)
+		var e Entry
+		err := rows.Scan(&e.ID, &e.Name, &e.Username, &e.Email)
 		if err != nil {
 			log.Fatalf("cannot scan row: %q", err)
 		}
 
-		all = append(all, e)
+		all = append(all, &e)
 	}
 
 	return all, nil
@@ -131,7 +131,7 @@ func (r *SQLiteRepository) GetByUsername(username string) (*Entry, error) {
 	query := fmt.Sprintf(selectByUername, r.currentTable)
 	row := r.db.QueryRow(query, username)
 
-	var e *Entry
+	var e Entry
 	err = row.Scan(&e.ID, &e.Name, &e.Username, &e.Email)
 
 	if err != nil {
@@ -140,7 +140,7 @@ func (r *SQLiteRepository) GetByUsername(username string) (*Entry, error) {
 		}
 	}
 
-	return e, nil
+	return &e, nil
 }
 
 /*

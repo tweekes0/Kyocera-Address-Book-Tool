@@ -121,9 +121,12 @@ func setup(t *testing.T) (*SQLiteRepository, func()) {
 		os.Remove(f.Name())
 	}
 
-	entryRepo := NewSQLiteRepository(db)
+	entryRepo, err := NewSQLiteRepository(db)
+	if err != nil {
+		log.Fatalf("could not create db connection: %q", err)
+	}
+	
 	err = entryRepo.Initialize()
-
 	if err != nil {
 		log.Fatalf("could not initialize sqlite db: %q", err)
 	}

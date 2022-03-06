@@ -27,11 +27,20 @@ type SQLiteRepository struct {
 	will be returned.
 */
 
-func NewSQLiteRepository(db *sql.DB) *SQLiteRepository {
+func NewSQLiteRepository(db *sql.DB) (*SQLiteRepository, error) {
+	err := validateTableName(DEFAULT_TABLE)
+	if err != nil {
+		return nil, err
+	}
+	
 	return &SQLiteRepository{
 		db:           db,
 		currentTable: DEFAULT_TABLE,
-	}
+	}, nil
+}
+
+func (r *SQLiteRepository) CurrentTable() string {
+	return r.currentTable
 }
 
 /*

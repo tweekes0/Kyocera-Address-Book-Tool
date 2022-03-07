@@ -188,8 +188,8 @@ func TestDelete(t *testing.T) {
 	repo, teardown := setupWithInserts(t)
 	defer teardown()
 
-	foundErr := repo.Delete(1)
-	notFoundErr := repo.Delete(99999)
+	foundErr := repo.Delete("username1")
+	notFoundErr := repo.Delete("unknown")
 
 	e, err := NewEntry(4, "Test One", "username1", "test1@test.com")
 	assertError(t, err, nil)
@@ -198,7 +198,7 @@ func TestDelete(t *testing.T) {
 	assertEntry(t, inserted, e)
 	assertError(t, err, nil)
 
-	newFoundErr := repo.Delete(4)
+	newFoundErr := repo.Delete("username1")
 	tt := []struct {
 		description string
 		got         error

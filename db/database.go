@@ -32,7 +32,7 @@ func NewSQLiteRepository(db *sql.DB) (*SQLiteRepository, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &SQLiteRepository{
 		db:           db,
 		currentTable: DEFAULT_TABLE,
@@ -112,13 +112,13 @@ func (r *SQLiteRepository) All() (all []*Entry, err error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var e Entry
+		e := new(Entry)
 		err := rows.Scan(&e.ID, &e.Name, &e.Username, &e.Email)
 		if err != nil {
 			log.Fatalf("cannot scan row: %q", err)
 		}
 
-		all = append(all, &e)
+		all = append(all, e)
 	}
 
 	return all, nil
@@ -140,7 +140,7 @@ func (r *SQLiteRepository) GetByUsername(username string) (*Entry, error) {
 	query := fmt.Sprintf(selectByUername, r.currentTable)
 	row := r.db.QueryRow(query, username)
 
-	var e Entry
+	e := new(Entry)
 	err = row.Scan(&e.ID, &e.Name, &e.Username, &e.Email)
 
 	if err != nil {
@@ -149,7 +149,7 @@ func (r *SQLiteRepository) GetByUsername(username string) (*Entry, error) {
 		}
 	}
 
-	return &e, nil
+	return e, nil
 }
 
 /*
@@ -197,14 +197,18 @@ func (r *SQLiteRepository) Update(id int64, updated *Entry) (*Entry, error) {
 	Logs to console and terminates execution if there is an issue with SQL
 */
 
-func (r *SQLiteRepository) Delete(id int64) error {
-	if id <= 0 {
-		return ErrInvalidID
+func (r *SQLiteRepository) Delete(username string) error {
+	// if id <= 0 {
+	// 	return ErrInvalidID
+	// }
+	err := validateField(username, usernamePattern, ErrInvalidUsername)
+	if err != nil {
+		return err
 	}
 
 	query := fmt.Sprintf(delete, r.currentTable)
 
-	res, err := r.db.Exec(query, id)
+	res, err := r.db.Exec(query, username)
 	if err != nil {
 		return err
 	}

@@ -25,7 +25,8 @@ type tableInfo struct {
 const (
 	insert          = "INSERT INTO %v(name, username, email) values(?,?,?)"
 	update          = "UPDATE %v SET name = ?, username = ?, email = ? WHERE id = ?"
-	delete          = "DELETE FROM %v WHERE id = ?"
+	// delete          = "DELETE FROM %v WHERE id = ?"
+	delete          = "DELETE FROM %v WHERE username = ?"
 	selectAll       = "SELECT * FROM %v"
 	selectTables    = "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
 	selectByUername = "SELECT * FROM %v WHERE username = ?"

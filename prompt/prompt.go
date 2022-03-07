@@ -1,7 +1,6 @@
 package prompt
 
 import (
-	// "bufio"
 	"fmt"
 	"io"
 	"log"
@@ -13,13 +12,14 @@ import (
 )
 
 /*
+	Driver for terminal application
+*/
 
- */
-func Prompt(r *db.SQLiteRepository, rd io.Reader, w io.Writer) {
+func Prompt(r *db.SQLiteRepository, w io.Writer) {
 	l := newReadLine()
 	defer l.Close()
 
-	Loop:
+Loop:
 	for {
 		p := fmt.Sprintf("%v» ", r.CurrentTable())
 
@@ -51,9 +51,17 @@ func Prompt(r *db.SQLiteRepository, rd io.Reader, w io.Writer) {
 			}
 			tableName := args[1]
 			switchTable(r, w, tableName)
-		case "users":
+		case "clear_table":
+			clearTable(r, w)
+		case "delete_table":
+			if len(args) != 2 {
+				continue
+			}
+			tableName := args[1]
+			deleteTable(r, w, tableName)
+		case "show_users":
 			showUsers(r, w)
-		case "add", "insert":
+		case "add_user":
 			params := parseInsertArgs(line)
 			if len(params) != 3 {
 				continue
@@ -65,7 +73,7 @@ func Prompt(r *db.SQLiteRepository, rd io.Reader, w io.Writer) {
 			}
 			username := args[1]
 			deleteEntry(r, w, username)
-		case "q", "quit": 
+		case "q", "quit":
 			fmt.Fprint(w, "Bye!\n\n")
 			break Loop
 		default:
@@ -74,14 +82,18 @@ func Prompt(r *db.SQLiteRepository, rd io.Reader, w io.Writer) {
 	}
 }
 
+/*
+	Returns customized readline instance.
+*/
+
 func newReadLine() *readline.Instance {
 	l, err := readline.NewEx(&readline.Config{
-		Prompt:          "\033[31mprompt»\033[0m ",
+		Prompt:          "",
 		AutoComplete:    completions,
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
 
-		HistorySearchFold:   true,
+		HistorySearchFold: true,
 	})
 	if err != nil {
 		log.Fatalf("could not create readline: %q", err)
@@ -90,9 +102,17 @@ func newReadLine() *readline.Instance {
 	return l
 }
 
+/*
+	Returns a slice of strings that are separated by spaces
+*/
+
 func parseArgs(s string) []string {
 	return strings.Fields(s)
 }
+
+/*
+	Returns slice of strings from a string that is separated by commas
+*/
 
 func parseInsertArgs(s string) []string {
 	sf := strings.Fields(s)
@@ -100,9 +120,8 @@ func parseInsertArgs(s string) []string {
 	params := []string{}
 
 	for _, str := range strings.Split(f, ",") {
-		params = append(params, strings.TrimSpace(str))	
+		params = append(params, strings.TrimSpace(str))
 	}
-	
+
 	return params
 }
-

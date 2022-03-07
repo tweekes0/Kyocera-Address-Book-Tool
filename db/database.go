@@ -198,9 +198,6 @@ func (r *SQLiteRepository) Update(id int64, updated *Entry) (*Entry, error) {
 */
 
 func (r *SQLiteRepository) Delete(username string) error {
-	// if id <= 0 {
-	// 	return ErrInvalidID
-	// }
 	err := validateField(username, usernamePattern, ErrInvalidUsername)
 	if err != nil {
 		return err

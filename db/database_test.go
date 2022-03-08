@@ -1,6 +1,7 @@
 package db
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -30,11 +31,11 @@ func TestInsert(t *testing.T) {
 		_e2, err2 := repo.Insert(*e2)
 		assertEntry(t, _e2, e2)
 		assertError(t, err2, nil)
-		
+
 		_e3, err3 := repo.Insert(*e3)
 		assertEntry(t, _e3, e3)
 		assertError(t, err3, nil)
-		
+
 	})
 
 	t.Run("insert non-unique entry", func(t *testing.T) {
@@ -62,7 +63,7 @@ func TestInsert(t *testing.T) {
 		_e2, err2 := repo.Insert(*e2)
 		assertEntry(t, _e2, e2)
 		assertError(t, err2, nil)
-		
+
 		_e3, err3 := repo.Insert(*e3)
 		assertEntry(t, _e3, e3)
 		assertError(t, err3, nil)
@@ -89,8 +90,8 @@ func TestGetByUsername(t *testing.T) {
 
 	found, foundErr := repo.GetByUsername("username1")
 	notFound, notFoundErr := repo.GetByUsername("unknown_user")
-	invalid, invalidErr	:= repo.GetByUsername("invalid user")
-	
+	invalid, invalidErr := repo.GetByUsername("invalid user")
+
 	tt := []struct {
 		description string
 		got         entryInfo
@@ -324,32 +325,32 @@ func TestTableExists(t *testing.T) {
 
 	tt := []struct {
 		description string
-		got error
-		expected error
-	} {
+		got         error
+		expected    error
+	}{
 		{
 			description: "default table exists",
-			got: err1,
-			expected: nil,
+			got:         err1,
+			expected:    nil,
 		},
 		{
 			description: "newly created table exists",
-			got: err2,
-			expected: nil,
+			got:         err2,
+			expected:    nil,
 		},
 		{
 			description: "invalid table exists",
-			got: err3,
-			expected: ErrInvalidTableName,
+			got:         err3,
+			expected:    ErrInvalidTableName,
 		},
 		{
 			description: "non-existing table exists",
-			got: err4,
-			expected: ErrTableDoesNotExist,
+			got:         err4,
+			expected:    ErrTableDoesNotExist,
 		},
 	}
 
-	for _,tc := range tt {
+	for _, tc := range tt {
 		assertError(t, tc.got, tc.expected)
 	}
 }
@@ -360,13 +361,13 @@ func TestClearTable(t *testing.T) {
 
 	t.Run("clear table", func(t *testing.T) {
 		repo.ClearTable()
-		
+
 		got, err := repo.All()
-		expected :=  []*Entry{}
-		assertError(t, err, nil)	
+		expected := []*Entry{}
+		assertError(t, err, nil)
 
 		if len(got) != 0 {
-			t.Errorf("got: %v, expected: %v", got, expected )
+			t.Errorf("got: %v, expected: %v", got, expected)
 		}
 	})
 }
@@ -381,55 +382,104 @@ func TestDeleteTable(t *testing.T) {
 	t1 := repo.currentTable
 	err1 := repo.DeleteTable("another_table")
 
-	t2 := repo.currentTable	
+	t2 := repo.currentTable
 	err2 := repo.DeleteTable(DEFAULT_TABLE)
-	
+
 	t3 := repo.currentTable
 	err3 := repo.DeleteTable("non-existing_table")
 
 	tt := []struct {
 		description string
-		got tableInfo
-		expected tableInfo
-	} {
+		got         tableInfo
+		expected    tableInfo
+	}{
 		{
 			description: "delete existing table",
 			got: tableInfo{
 				tableName: t1,
-				err: err1,
-			}, 
+				err:       err1,
+			},
 			expected: tableInfo{
 				tableName: "another_table",
-				err: nil,
+				err:       nil,
 			},
-		}, 
+		},
 		{
 			description: "delete default table",
 			got: tableInfo{
 				tableName: t2,
-				err: err2,
-			}, 
+				err:       err2,
+			},
 			expected: tableInfo{
 				tableName: DEFAULT_TABLE,
-				err: ErrTableCannotBeDeleted,
+				err:       ErrTableCannotBeDeleted,
 			},
-		}, 
+		},
 		{
 			description: "delete non-existing table",
 			got: tableInfo{
 				tableName: t3,
-				err: err3,
-			}, 
+				err:       err3,
+			},
 			expected: tableInfo{
 				tableName: DEFAULT_TABLE,
-				err: ErrTableDoesNotExist,
+				err:       ErrTableDoesNotExist,
 			},
-		}, 
+		},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.description, func(t *testing.T) {
 			assertTableInfo(t, tc.got, tc.expected)
+		})
+	}
+}
+
+func TestListTables(t *testing.T) {
+	repo, teardown := setup(t)
+	defer teardown()
+
+	t1 := repo.ListTables()
+
+	repo.NewTable("new_table")
+	repo.NewTable("new_table1")
+	repo.NewTable("new_table2")
+
+	t2 := repo.ListTables()
+
+	repo.DeleteTable("new_table")
+	repo.DeleteTable("new_table2")
+
+	t3 := repo.ListTables()
+
+	tt := []struct {
+		description string
+		got         []string
+		expected    []string
+	}{
+		{
+			description: "listing default_table",
+			got:         t1,
+			expected:    []string{"default_table"},
+		},
+		{
+			description: "listing multiple tables",
+			got:         t2,
+			expected: []string{"default_table", "new_table", "new_table1",
+				"new_table2"},
+		},
+		{
+			description: "listing tables after deletes",
+			got:         t3,
+			expected:    []string{"default_table", "new_table1"},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.description, func(t *testing.T) {
+			if !reflect.DeepEqual(tc.got, tc.expected) {
+				t.Fatalf("got: %v, expected: %v", tc.got, tc.expected)
+			}
 		})
 	}
 }

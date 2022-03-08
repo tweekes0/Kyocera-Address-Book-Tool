@@ -108,7 +108,7 @@ var (
 
 func assertError(t testing.TB, got, expected error) {
 	if got != expected {
-		t.Fatalf("got: %q, expected: %q", got, expected)
+		t.Fatalf("got: %v, expected: %v", got, expected)
 	}
 }
 

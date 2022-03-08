@@ -135,6 +135,6 @@ func parseInsertArgs(s string) []string {
 }
 
 func outputMessage(w io.Writer, symbol rune, msg string) {
-	fmt.Fprintf(w, "[%v] %v\n\n", symbol, msg)
+	fmt.Fprintf(w, "[%v] %v\n\n", string(symbol), msg)
 }
 

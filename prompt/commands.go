@@ -22,8 +22,8 @@ var completions = readline.NewPrefixCompleter(
 	readline.PcItem("show_users"),
 	readline.PcItem("add_user"),
 	readline.PcItem("delete_user"),
-	
-	readline.PcItem("help", 
+
+	readline.PcItem("help",
 		readline.PcItem("create_table"),
 		readline.PcItem("switch_table"),
 		readline.PcItem("clear_table"),
@@ -34,41 +34,42 @@ var completions = readline.NewPrefixCompleter(
 		readline.PcItem("delete_user"),
 	),
 )
+
 /*
 	Map of commands with descriptions and usage for printing help information
 */
 
-var commands = map[string]struct{
+var commands = map[string]struct {
 	description string
-	usage string 
-} {
-	"create_table" :  {
+	usage       string
+}{
+	"create_table": {
 		description: "creates new table and sets it to the current table",
-		usage: "create_table 'TABLE_NAME'",
+		usage:       "create_table 'TABLE_NAME'",
 	},
-	"switch_table" : {
+	"switch_table": {
 		description: "switch the current table",
-		usage: "switch_table 'TABLE_NAME'",
+		usage:       "switch_table 'TABLE_NAME'",
 	},
-	"clear_table" : {
+	"clear_table": {
 		description: "clear the current table of all entries",
-		usage: "clear_table",
+		usage:       "clear_table",
 	},
-	"list_tables" : {
+	"list_tables": {
 		description: "list all tables",
-		usage: "list_table",
+		usage:       "list_table",
 	},
-	"show_users" : {
+	"show_users": {
 		description: "show all the users in the current table",
-		usage: "show_users",
+		usage:       "show_users",
 	},
-	"add_user" : {
+	"add_user": {
 		description: "add user to the current table. Fields must be separated by commas",
-		usage: "add_user NAME,USERNAME,EMAIL",
+		usage:       "add_user NAME,USERNAME,EMAIL",
 	},
-	"delete_user" : {
+	"delete_user": {
 		description: "delete a single user from the current table",
-		usage: "delete_user USERNAME",
+		usage:       "delete_user USERNAME",
 	},
 }
 
@@ -78,14 +79,14 @@ var commands = map[string]struct{
 */
 
 func helpCommand(w io.Writer, s string) {
-	if command, ok := commands[s] ; ok {
+	if command, ok := commands[s]; ok {
 		fmt.Fprintln(w)
 		fmt.Fprintf(w, "%v\n", command.description)
 		fmt.Fprintf(w, "usage: %v\n", command.usage)
 		fmt.Fprintln(w)
 	} else {
 		listCommands(w)
-	}	
+	}
 }
 
 /*
@@ -97,7 +98,7 @@ func listCommands(w io.Writer) {
 	for k := range commands {
 		keys = append(keys, k)
 	}
-	
+
 	sort.Strings(keys)
 
 	fmt.Fprintln(w)
@@ -105,7 +106,7 @@ func listCommands(w io.Writer) {
 	for _, k := range keys {
 		fmt.Fprintf(w, "%-15v : %10v\n", k, commands[k].description)
 	}
-	
+
 	fmt.Fprintln(w)
 }
 

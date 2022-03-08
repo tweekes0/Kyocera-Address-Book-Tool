@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-
 	"strings"
 
 	"github.com/chzyer/readline"
@@ -78,7 +77,7 @@ Loop:
 		case "q", "quit":
 			fmt.Fprint(w, "Bye!\n\n")
 			break Loop
-		case "h", "help": 
+		case "h", "help":
 			if len(args) == 2 {
 				helpCommand(w, args[1])
 			} else {

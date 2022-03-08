@@ -59,6 +59,8 @@ Loop:
 			}
 			tableName := args[1]
 			deleteTable(r, w, tableName)
+		case "list_tables":
+			listTables(r, w)
 		case "show_users":
 			showUsers(r, w)
 		case "add_user":
@@ -76,6 +78,12 @@ Loop:
 		case "q", "quit":
 			fmt.Fprint(w, "Bye!\n\n")
 			break Loop
+		case "h", "help": 
+			if len(args) == 2 {
+				helpCommand(w, args[1])
+			} else {
+				listCommands(w)
+			}
 		default:
 			fmt.Fprint(w, "[-] enter 'help' or 'h' for a list of commands\n\n")
 		}

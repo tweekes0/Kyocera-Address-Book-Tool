@@ -12,6 +12,10 @@ import (
 	"testing"
 )
 
+/*
+	Structs used for testing Entries and Tables respectively.
+*/
+
 type entryInfo struct {
 	entry *Entry
 	err   error
@@ -22,13 +26,24 @@ type tableInfo struct {
 	err       error
 }
 
+/*
+	Name of the default table that is always created and cannot be deleted in
+	the application.
+*/
+
+const DEFAULT_TABLE = "default_table"
+
+/*
+	SQLite queries
+*/
+
 const (
-	insert          = "INSERT INTO %v(name, username, email) values(?,?,?)"
-	update          = "UPDATE %v SET name = ?, username = ?, email = ? WHERE id = ?"
-	delete          = "DELETE FROM %v WHERE username = ?"
-	selectAll       = "SELECT * FROM %v"
-	selectTables    = "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
-	selectByUername = "SELECT * FROM %v WHERE username = ?"
+	insert          = "INSERT INTO %v(name, username, email) values(?,?,?);"
+	update          = "UPDATE %v SET name = ?, username = ?, email = ? WHERE id = ?;"
+	delete          = "DELETE FROM %v WHERE username = ?;"
+	selectAll       = "SELECT * FROM %v;"
+	selectTable    = "SELECT name FROM sqlite_master WHERE type='table' AND name=?;"
+	selectByUername = "SELECT * FROM %v WHERE username = ?;"
 	createTable     = `CREATE TABLE IF NOT EXISTS %v (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name text NOT NULL,
@@ -37,12 +52,19 @@ const (
 		);`
 	clearTable  = "DELETE FROM %v"
 	deleteTable = "DROP TABLE %v"
+	listTables  = `SELECT name from sqlite_master WHERE TYPE="table" AND name 
+	NOT LIKE '%sql%';`
+)
 
-	DEFAULT_TABLE = "default_table"
+/*
+	Patterns for regular expressions
+*/
 
-	namePattern = "^[a-zA-Z]+([ ]?[a-zA-Z]+)*$"
+const (
+	namePattern     = "^[a-zA-Z]+([ ]?[a-zA-Z]+)*$"
 	usernamePattern = "^[a-zA-Z]+([\\._-]?[a-zA-Z0-9])*$"
-	emailPattern = "^[a-zA-Z]+([\\._-]?[a-zA-Z0-9])+@[a-zA-Z]+(\\.[a-zA-Z]+)+$"
+	emailPattern    = "^[a-zA-Z]+([\\._-]?[a-zA-Z0-9])+@[a-zA-Z]+(\\.[a-zA-Z]+)+$"
+	tablePattern    = "^[a-zA-Z0-9]{2,}([-_]{1}[a-zA-Z0-9]+)*$"
 )
 
 var (
@@ -64,6 +86,10 @@ var (
 		Username: "username3",
 		Email:    "test3@test.com"}
 )
+
+/*
+	Errors
+*/
 
 var (
 	ErrDuplicate            = errors.New("record already exists")
@@ -88,7 +114,7 @@ func assertError(t testing.TB, got, expected error) {
 
 func assertEntry(t testing.TB, got, expected *Entry) {
 	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("got: %v, expected: %v\n", got, expected)
+		t.Fatalf("got: %v, expected: %v\n", got, expected)
 	}
 }
 
@@ -100,9 +126,13 @@ func assertEntryInfo(t testing.TB, got, expected entryInfo) {
 func assertTableInfo(t testing.TB, got, expected tableInfo) {
 	assertError(t, got.err, expected.err)
 	if got.tableName != expected.tableName {
-		t.Errorf("got: %v, expected: %v", got.tableName, expected.tableName)
+		t.Fatalf("got: %v, expected: %v", got.tableName, expected.tableName)
 	}
 }
+
+/*
+	Function to create a database reference and return the clean up function
+*/
 
 func setup(t *testing.T) (*SQLiteRepository, func()) {
 	t.Parallel()
@@ -125,7 +155,7 @@ func setup(t *testing.T) (*SQLiteRepository, func()) {
 	if err != nil {
 		log.Fatalf("could not create db connection: %q", err)
 	}
-	
+
 	err = entryRepo.Initialize()
 	if err != nil {
 		log.Fatalf("could not initialize sqlite db: %q", err)
@@ -133,6 +163,11 @@ func setup(t *testing.T) (*SQLiteRepository, func()) {
 
 	return entryRepo, teardown
 }
+
+/*
+	Function to create a database and load Entries into it and return
+	clean up function.
+*/
 
 func setupWithInserts(t *testing.T) (*SQLiteRepository, func()) {
 	entryRepo, teardown := setup(t)
@@ -147,11 +182,14 @@ func setupWithInserts(t *testing.T) (*SQLiteRepository, func()) {
 	return entryRepo, teardown
 }
 
+/*
+	Function to make sure tables are named properly. and cannot contain sql
+*/
+
 func validateTableName(tableName string) error {
-	const tablePattern = "^[a-zA-Z]{2,}([-_]{1}[a-zA-Z0-9]+)*$"
 	re := regexp.MustCompile(tablePattern)
 
-	if !re.MatchString(tableName) || strings.Contains(tableName, "sqlite") {
+	if !re.MatchString(tableName) || strings.Contains(tableName, "sql") {
 		return ErrInvalidTableName
 	}
 

@@ -303,7 +303,7 @@ func (r *SQLiteRepository) TableExists(tableName string) (bool, error) {
 		return false, ErrInvalidTableName
 	}
 
-	rows, err := r.db.Query(selectTables, tableName)
+	rows, err := r.db.Query(selectTable, tableName)
 
 	if err != nil {
 		log.Fatalf("cannot query database: %q", err)
@@ -345,4 +345,28 @@ func (r *SQLiteRepository) DeleteTable(tableName string) error {
 	}
 
 	return nil
+}
+
+/*
+	List all tables that the user created. 
+*/
+
+func (r *SQLiteRepository) ListTables() (tables []string) {
+	rows, err := r.db.Query(listTables)
+	if err != nil {
+		log.Fatalf("cannot query db: %q", err)
+	}
+
+	for rows.Next() {
+		var s string
+		
+		err = rows.Scan(&s)
+		if err != nil {
+			log.Fatalf("cannot get row: %q", err)
+		}
+
+		tables = append(tables, s)
+	}
+
+	return 
 }

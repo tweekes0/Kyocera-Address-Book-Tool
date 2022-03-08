@@ -158,7 +158,7 @@ func showUsers(r *db.SQLiteRepository, w io.Writer) {
 */
 
 func insertEntry(r *db.SQLiteRepository, w io.Writer, params []string) {
-	e, err := db.NewEntry(1, params[0], params[1], params[2])
+	e, err := db.NewEntry(params[0], params[1], params[2])
 	if err != nil {
 		fmt.Fprintln(w, "[-] ", err)
 	} else {

@@ -8,9 +8,9 @@ import (
 
 /*
 	Entry struct models how data will be inserted into database.
-	
+
 	ID: a unique id of the Entry's record in the database,
-	Name: the owner of the entry 
+	Name: the owner of the entry
 	Username: unique identifier for the entry
 	Email: email address of the Entry's owner
 */
@@ -36,12 +36,25 @@ func (e *Entry) Display(writer io.Writer) {
 /*
 	Entry struct constructor.
 
-	Given the proper parameters, a new Entry pointer will be returned. If there
-	is an issue with any of the fields nil will be returned with the 
-	corresponding error. 
+	Given the proper parameters,  a reference to an Entry will be returned.
+	If there is an issue with one of the fields an error will be returned.
 */
 
-func NewEntry(id int64, name, username, email string) (*Entry, error) {
+func NewEntry(name, username, email string) (*Entry, error) {
+	p := new(Entry)
+	p.Name = name
+	p.Username = username
+	p.Email = email
+
+	err := validateEntry(p)
+	if err != nil {
+		return nil, err
+	}
+
+	return p, err
+}
+
+func newTestEntry(id int64, name, username, email string) (*Entry, error) {
 	p := new(Entry)
 	p.ID = id
 	p.Name = name
@@ -76,7 +89,7 @@ func validateField(field, pattern string, err error) error {
 }
 
 /*
-	Function that checks all the string fields of a given Entry. If a field 
+	Function that checks all the string fields of a given Entry. If a field
 	fails to conform to its pattern a corresponding error is returned.
 
 	e: Pointer for an Entry that is to be checked.

@@ -146,8 +146,8 @@ func TestUpdate(t *testing.T) {
 	updated, err := newTestEntry(1, "new name", "newUsername", "newemail@test.com")
 	assertError(t, err, nil)
 
-	found, foundErr := repo.Update(1, updated)
-	notFound, notFoundErr := repo.Update(999999, updated)
+	found, foundErr := repo.Update("username1", updated)
+	notFound, notFoundErr := repo.Update("non-existingusername", updated)
 
 	tt := []struct {
 		description string

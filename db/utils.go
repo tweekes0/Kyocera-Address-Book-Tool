@@ -39,11 +39,11 @@ const DEFAULT_TABLE = "default_table"
 
 const (
 	insert          = "INSERT INTO %v(name, username, email) values(?,?,?);"
-	update          = "UPDATE %v SET name = ?, username = ?, email = ? WHERE id = ?;"
-	delete          = "DELETE FROM %v WHERE username = ?;"
+	update          = "UPDATE %v SET name=?, username=?, email=? WHERE username=?;"
+	delete          = "DELETE FROM %v WHERE username=?;"
 	selectAll       = "SELECT * FROM %v;"
 	selectTable    = "SELECT name FROM sqlite_master WHERE type='table' AND name=?;"
-	selectByUername = "SELECT * FROM %v WHERE username = ?;"
+	selectByUername = "SELECT * FROM %v WHERE username=?;"
 	createTable     = `CREATE TABLE IF NOT EXISTS %v (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name text NOT NULL,

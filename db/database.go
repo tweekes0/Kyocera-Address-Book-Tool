@@ -44,8 +44,8 @@ func (r *SQLiteRepository) CurrentTable() string {
 }
 
 /*
-	Createas the default table. 
-	
+	Createas the default table.
+
 	Logs to console and terminates execution if there is an issue with SQL
 */
 
@@ -62,7 +62,7 @@ func (r *SQLiteRepository) Initialize() error {
 }
 
 /*
-	Inserts en Entry into currentTable and returns the reference of the Entry 
+	Inserts en Entry into currentTable and returns the reference of the Entry
 	with an ID given to it from the database.
 
 	Logs to console and terminates execution if there is an issue with SQLer
@@ -97,7 +97,7 @@ func (r *SQLiteRepository) Insert(e Entry) (*Entry, error) {
 }
 
 /*
-	Queries currentTable return all the Entries  
+	Queries currentTable return all the Entries
 
 	Logs to console and terminates execution if there is an issue with SQL
 */
@@ -136,7 +136,7 @@ func (r *SQLiteRepository) GetByUsername(username string) (*Entry, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	query := fmt.Sprintf(selectByUername, r.currentTable)
 	row := r.db.QueryRow(query, username)
 
@@ -153,28 +153,30 @@ func (r *SQLiteRepository) GetByUsername(username string) (*Entry, error) {
 }
 
 /*
-	Updates an Entry in the currentTable given it's id with the newly 
-	updated Entry. Returns the updated entry if there are no issues. 
-	If there are no updates no Entry is returned and corresponding 
+	Updates an Entry in the currentTable given it's username with the newly
+	updated Entry. Returns the updated entry if there are no issues.
+	If there are no updates no Entry is returned and corresponding
 	error is returned also.
 
-	Logs error to console and terminates execution if there is an issue with the 
+	Logs error to console and terminates execution if there is an issue with the
 	SQL.
 */
 
-func (r *SQLiteRepository) Update(id int64, updated *Entry) (*Entry, error) {
-	if id <= 0 {
-		return nil, ErrInvalidID
+func (r *SQLiteRepository) Update(username string, u *Entry) (*Entry, error) {
+	err := validateField(username, usernamePattern, ErrInvalidUsername)
+	if err != nil {
+		return nil, err
 	}
 
-	err := validateEntry(updated) 
+	err = validateEntry(u)
 	if err != nil {
 		return nil, err
 	}
 
 	query := fmt.Sprintf(update, r.currentTable)
 
-	res, err := r.db.Exec(query, updated.Name, updated.Username, updated.Email, id)
+	res, err := r.db.Exec(query, u.Name, u.Username, u.Email,
+		username)
 	if err != nil {
 		log.Fatalf("cannot execute statement: %q", err)
 	}
@@ -188,7 +190,7 @@ func (r *SQLiteRepository) Update(id int64, updated *Entry) (*Entry, error) {
 		return nil, ErrUpdateFailed
 	}
 
-	return updated, nil
+	return u, nil
 }
 
 /*
@@ -223,7 +225,7 @@ func (r *SQLiteRepository) Delete(username string) error {
 }
 
 /*
-	Creates a new table within the database. currentTable is updated if the 
+	Creates a new table within the database. currentTable is updated if the
 	table is valid and does not already exist.
 
 	Logs to console and terminates execution if there is an issue with SQL
@@ -290,7 +292,7 @@ func (r *SQLiteRepository) ClearTable() error {
 
 /*
 	Checks for the existence of a the given tableName and will return a bool
-	for the table's existence. If the table does not exist an error will be 
+	for the table's existence. If the table does not exist an error will be
 	returned to the caller as to why not.
 
 	Logs to console and terminates execution if there is an issue with SQL
@@ -348,7 +350,7 @@ func (r *SQLiteRepository) DeleteTable(tableName string) error {
 }
 
 /*
-	List all tables that the user created. 
+	List all tables that the user created.
 */
 
 func (r *SQLiteRepository) ListTables() (tables []string) {
@@ -359,7 +361,7 @@ func (r *SQLiteRepository) ListTables() (tables []string) {
 
 	for rows.Next() {
 		var s string
-		
+
 		err = rows.Scan(&s)
 		if err != nil {
 			log.Fatalf("cannot get row: %q", err)
@@ -368,5 +370,5 @@ func (r *SQLiteRepository) ListTables() (tables []string) {
 		tables = append(tables, s)
 	}
 
-	return 
+	return
 }

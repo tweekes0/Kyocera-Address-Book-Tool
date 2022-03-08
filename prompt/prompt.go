@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/chzyer/readline"
@@ -44,12 +45,14 @@ Loop:
 		switch command {
 		case "create_table":
 			if len(args) != 2 {
+				helpCommand(w, command)
 				continue
 			}
 			tableName := args[1]
 			createTable(r, w, tableName)
 		case "switch_table":
 			if len(args) != 2 {
+				helpCommand(w, command)
 				continue
 			}
 			tableName := args[1]
@@ -58,6 +61,7 @@ Loop:
 			clearTable(r, w)
 		case "delete_table":
 			if len(args) != 2 {
+				helpCommand(w, command)
 				continue
 			}
 			tableName := args[1]
@@ -69,26 +73,40 @@ Loop:
 		case "add_user":
 			params := parseInsertArgs(line)
 			if len(params) != 3 {
+				helpCommand(w, command)
 				continue
 			}
 			insertEntry(r, w, params)
 		case "delete_user":
 			if len(args) != 2 {
+				helpCommand(w, command)
 				continue
 			}
 			username := args[1]
 			deleteEntry(r, w, username)
-		case "q", "quit":
+		case "import_csv":
+			if len(args) != 2 {
+				helpCommand(w, command)
+				continue
+			}
+			f, err := os.Open(args[1])
+			if err != nil {
+				outputMessage(w, '-', err.Error())
+				continue
+			}
+	
+			importCSV(r, f, w)
+		case "quit":
 			fmt.Fprint(w, "Bye!\n\n")
 			break Loop
-		case "h", "help":
+		case "help":
 			if len(args) == 2 {
 				helpCommand(w, args[1])
 			} else {
 				listCommands(w)
 			}
 		default:
-			msg := "enter 'help' or 'h' for a list of commands"
+			msg := "type 'help' for a list of commands"
 			outputMessage(w, '!', msg)
 		}
 	}

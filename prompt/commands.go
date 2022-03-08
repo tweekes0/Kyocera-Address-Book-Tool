@@ -1,12 +1,14 @@
 package prompt
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"sort"
 
 	"github.com/chzyer/readline"
 	"github.com/kitar0s/kyocera-ab-tool/db"
+	"github.com/kitar0s/kyocera-ab-tool/importer"
 )
 
 /*
@@ -22,6 +24,7 @@ var completions = readline.NewPrefixCompleter(
 	readline.PcItem("show_users"),
 	readline.PcItem("add_user"),
 	readline.PcItem("delete_user"),
+	readline.PcItem("import_csv"),
 
 	readline.PcItem("help",
 		readline.PcItem("create_table"),
@@ -32,6 +35,7 @@ var completions = readline.NewPrefixCompleter(
 		readline.PcItem("show_users"),
 		readline.PcItem("add_user"),
 		readline.PcItem("delete_user"),
+		readline.PcItem("import_csv"),
 	),
 )
 
@@ -71,6 +75,10 @@ var commands = map[string]struct {
 		description: "delete a single user from the current table",
 		usage:       "delete_user USERNAME",
 	},
+	"import_csv": {
+		description: "import users from csv file into current table",
+		usage:       "import_csv PATH_TO_FILE",
+	},
 }
 
 /*
@@ -90,7 +98,7 @@ func helpCommand(w io.Writer, s string) {
 }
 
 /*
-	Lists all the commands to the user.
+	List all the commands to the user.
 */
 
 func listCommands(w io.Writer) {
@@ -120,8 +128,8 @@ func createTable(r *db.SQLiteRepository, w io.Writer, tableName string) {
 	if err != nil {
 		outputMessage(w, '-', err.Error())
 	} else {
-		msg := fmt.Sprintf("%v was created successfully",r.CurrentTable())
-		outputMessage(w, '-', msg)
+		msg := fmt.Sprintf("%v was created successfully", r.CurrentTable())
+		outputMessage(w, '+', msg)
 	}
 }
 
@@ -174,7 +182,7 @@ func insertEntry(r *db.SQLiteRepository, w io.Writer, params []string) {
 }
 
 /*
-	Deletes an Entry from the database given a valid username.
+	Delete an Entry from the database given a valid username.
 */
 
 func deleteEntry(r *db.SQLiteRepository, w io.Writer, username string) {
@@ -192,7 +200,7 @@ func deleteEntry(r *db.SQLiteRepository, w io.Writer, username string) {
 }
 
 /*
-	Clears all the entries from the current table
+	Clear all the entries from the current table
 */
 
 func clearTable(r *db.SQLiteRepository, w io.Writer) {
@@ -200,9 +208,9 @@ func clearTable(r *db.SQLiteRepository, w io.Writer) {
 	if err != nil {
 		outputMessage(w, '-', err.Error())
 	} else {
-		msg := fmt.Sprintf("%v was cleared sucessfully",r.CurrentTable())
+		msg := fmt.Sprintf("%v was cleared sucessfully", r.CurrentTable())
 		outputMessage(w, '+', msg)
-		
+
 	}
 }
 
@@ -221,7 +229,7 @@ func deleteTable(r *db.SQLiteRepository, w io.Writer, tableName string) {
 }
 
 /*
-	Lists all tables, created by the user.
+	List all tables, created by the user.
 */
 
 func listTables(r *db.SQLiteRepository, w io.Writer) {
@@ -233,4 +241,34 @@ func listTables(r *db.SQLiteRepository, w io.Writer) {
 	}
 
 	fmt.Fprintln(w)
+}
+
+/*
+	Import csv entries into the current table
+*/
+
+func importCSV(r *db.SQLiteRepository, rd io.Reader, w io.Writer) {
+	entries, err := importer.ImportCSV(rd)
+	if err != nil {
+		outputMessage(w, '-', err.Error())
+		return
+	}
+
+	for i, e := range entries {
+		_, err = r.Insert(*e)
+		if err != nil {
+			if errors.Is(err, db.ErrDuplicate) {
+				msg := fmt.Sprintf("Entry on line %d already exists", i+2)
+				outputMessage(w, '-', msg)
+				return
+			}
+
+			outputMessage(w, '-', err.Error())
+			return
+		}
+	}
+
+	msg := fmt.Sprintf("import completed successfully. %d entries added.",
+		len(entries))
+	outputMessage(w, '+', msg)
 }

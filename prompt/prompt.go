@@ -35,6 +35,10 @@ Loop:
 		}
 
 		args := parseArgs(line)
+		if  len(args) == 0 {
+			continue
+		}
+
 		command := args[0]
 
 		switch command {
@@ -133,6 +137,13 @@ func parseInsertArgs(s string) []string {
 
 	return params
 }
+
+/*
+	Outputs message to the user.
+		+ indicates success
+		- indicates error
+		! indicates exclamatory
+*/
 
 func outputMessage(w io.Writer, symbol rune, msg string) {
 	fmt.Fprintf(w, "[%v] %v\n\n", string(symbol), msg)

@@ -118,10 +118,10 @@ func listCommands(w io.Writer) {
 func createTable(r *db.SQLiteRepository, w io.Writer, tableName string) {
 	err := r.NewTable(tableName)
 	if err != nil {
-		fmt.Fprintf(w, "[-] %v\n\n", err)
+		outputMessage(w, '-', err.Error())
 	} else {
-		fmt.Fprintf(w, "[+] %v was created successfully\n\n",
-			r.CurrentTable())
+		msg := fmt.Sprintf("%v was created successfully",r.CurrentTable())
+		outputMessage(w, '-', msg)
 	}
 }
 
@@ -132,7 +132,7 @@ func createTable(r *db.SQLiteRepository, w io.Writer, tableName string) {
 func switchTable(r *db.SQLiteRepository, w io.Writer, tableName string) {
 	err := r.SwitchTable(tableName)
 	if err != nil {
-		fmt.Fprintf(w, "[-] %v\n\n", err)
+		outputMessage(w, '-', err.Error())
 	}
 }
 
@@ -143,10 +143,11 @@ func switchTable(r *db.SQLiteRepository, w io.Writer, tableName string) {
 func showUsers(r *db.SQLiteRepository, w io.Writer) {
 	all, err := r.All()
 	if err != nil {
-		fmt.Fprintf(w, "[-] %v\n", err)
+		outputMessage(w, '-', err.Error())
 	} else {
 		// TODO: implement pretty way to print all the entries
-		fmt.Fprintf(w, "[+] contents of %v\n", r.CurrentTable())
+		msg := fmt.Sprintf("contents of %v", r.CurrentTable())
+		outputMessage(w, '+', msg)
 		for _, e := range all {
 			e.Display(w)
 		}
@@ -160,14 +161,14 @@ func showUsers(r *db.SQLiteRepository, w io.Writer) {
 func insertEntry(r *db.SQLiteRepository, w io.Writer, params []string) {
 	e, err := db.NewEntry(params[0], params[1], params[2])
 	if err != nil {
-		fmt.Fprintln(w, "[-] ", err)
+		outputMessage(w, '-', err.Error())
 	} else {
 		_, err = r.Insert(*e)
 		if err != nil {
-			fmt.Fprintf(w, "[-] %v\n\n", err)
+			outputMessage(w, '-', err.Error())
 		} else {
-			fmt.Fprintf(w, "[+] %v was added successfully\n\n",
-				e.Name)
+			msg := fmt.Sprintf("%v was added successfully", e.Name)
+			outputMessage(w, '+', msg)
 		}
 	}
 }
@@ -179,13 +180,14 @@ func insertEntry(r *db.SQLiteRepository, w io.Writer, params []string) {
 func deleteEntry(r *db.SQLiteRepository, w io.Writer, username string) {
 	e, err := r.GetByUsername(username)
 	if err != nil {
-		fmt.Fprintf(w, "[-] %v\n\n", err)
+		outputMessage(w, '-', err.Error())
 	}
 	err = r.Delete(username)
 	if err != nil {
-		fmt.Fprintf(w, "[-] %v\n\n", err)
+		outputMessage(w, '-', err.Error())
 	} else {
-		fmt.Fprintf(w, "[+] %v was deleted sucessfully\n\n", e.Name)
+		msg := fmt.Sprintf("%v was deleted sucessfully", e.Name)
+		outputMessage(w, '+', msg)
 	}
 }
 
@@ -196,10 +198,11 @@ func deleteEntry(r *db.SQLiteRepository, w io.Writer, username string) {
 func clearTable(r *db.SQLiteRepository, w io.Writer) {
 	err := r.ClearTable()
 	if err != nil {
-		fmt.Fprintf(w, "[-] %v\n\n", err)
+		outputMessage(w, '-', err.Error())
 	} else {
-		fmt.Fprintf(w, "[+] %v was cleared sucessfully\n\n",
-			r.CurrentTable())
+		msg := fmt.Sprintf("%v was cleared sucessfully",r.CurrentTable())
+		outputMessage(w, '+', msg)
+		
 	}
 }
 
@@ -210,10 +213,10 @@ func clearTable(r *db.SQLiteRepository, w io.Writer) {
 func deleteTable(r *db.SQLiteRepository, w io.Writer, tableName string) {
 	err := r.DeleteTable(tableName)
 	if err != nil {
-		fmt.Fprintf(w, "[-] %v\n\n", err)
+		outputMessage(w, '-', err.Error())
 	} else {
-		fmt.Fprintf(w, "[+] %v was deleted sucessfully\n\n",
-			tableName)
+		msg := fmt.Sprintf("%v was deleted successfully", tableName)
+		outputMessage(w, '+', msg)
 	}
 }
 

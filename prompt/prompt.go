@@ -84,7 +84,8 @@ Loop:
 				listCommands(w)
 			}
 		default:
-			fmt.Fprint(w, "[-] enter 'help' or 'h' for a list of commands\n\n")
+			msg := "enter 'help' or 'h' for a list of commands"
+			outputMessage(w, '!', msg)
 		}
 	}
 }
@@ -132,3 +133,8 @@ func parseInsertArgs(s string) []string {
 
 	return params
 }
+
+func outputMessage(w io.Writer, symbol rune, msg string) {
+	fmt.Fprintf(w, "[%v] %v\n\n", symbol, msg)
+}
+

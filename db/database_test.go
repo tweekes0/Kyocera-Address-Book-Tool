@@ -254,6 +254,11 @@ func TestNewTable(t *testing.T) {
 			expected:    ErrInvalidTableName,
 		},
 		{
+			description: "create table with invalid name",
+			got:         repo.NewTable("5thinvalid_table_name"),
+			expected:    ErrInvalidTableName,
+		},
+		{
 			description: "create table with a existing name",
 			got:         repo.NewTable(DEFAULT_TABLE),
 			expected:    ErrTableExists,

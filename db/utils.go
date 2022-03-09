@@ -64,7 +64,7 @@ const (
 	namePattern         = `^[a-zA-Z]+([ ]?[a-zA-Z]+)*$`
 	usernamePattern     = `^[a-zA-Z]+([\._-]?[a-zA-Z0-9])*$`
 	emailPattern        = `^[a-zA-Z]+([\._-]?[a-zA-Z0-9])+@[a-zA-Z]+(\.[a-zA-Z]+)+$`
-	tablePattern        = `^[a-zA-Z_]?([a-zA-Z0-9]+[_]?)*$`
+	tablePattern        = `^[a-zA-Z_]{1}([a-zA-Z0-9]+[_]?)*$`
 	bracketTablePattern = `^[\[][a-zA-Z0-9]+([ +!?._\-a-zA-Z0-9])*[\]]$`
 )
 

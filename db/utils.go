@@ -190,9 +190,9 @@ func setupWithInserts(t *testing.T) (*SQLiteRepository, func()) {
 func validateTableName(tableName string) error {
 	pat1 := regexp.MustCompile(tablePattern)
 	pat2 := regexp.MustCompile(bracketTablePattern)
+	b := !strings.Contains(tableName, "sql") && tableName != "table"
 
-	if pat1.MatchString(tableName) || pat2.MatchString(tableName) &&
-		!strings.Contains(tableName, "sql") {
+	if (pat1.MatchString(tableName) || pat2.MatchString(tableName)) && b {
 		return nil
 	}
 

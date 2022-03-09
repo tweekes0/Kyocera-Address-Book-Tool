@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strings"
 
 	"github.com/chzyer/readline"
 	"github.com/kitar0s/kyocera-ab-tool/db"
@@ -25,6 +26,7 @@ var completions = readline.NewPrefixCompleter(
 	readline.PcItem("add_user"),
 	readline.PcItem("delete_user"),
 	readline.PcItem("import_csv"),
+	readline.PcItem("exit"),
 
 	readline.PcItem("help",
 		readline.PcItem("create_table"),
@@ -36,6 +38,7 @@ var completions = readline.NewPrefixCompleter(
 		readline.PcItem("add_user"),
 		readline.PcItem("delete_user"),
 		readline.PcItem("import_csv"),
+		readline.PcItem("exit"),
 	),
 )
 
@@ -59,6 +62,10 @@ var commands = map[string]struct {
 		description: "clear the current table of all entries",
 		usage:       "clear_table",
 	},
+	"delete_table": {
+		description: "clear the current table of all entries",
+		usage:       "clear_table",
+	},
 	"list_tables": {
 		description: "list all tables",
 		usage:       "list_table",
@@ -69,15 +76,19 @@ var commands = map[string]struct {
 	},
 	"add_user": {
 		description: "add user to the current table. Fields must be separated by commas",
-		usage:       "add_user NAME,USERNAME,EMAIL",
+		usage:       "add_user 'NAME,USERNAME,EMAIL'",
 	},
 	"delete_user": {
 		description: "delete a single user from the current table",
-		usage:       "delete_user USERNAME",
+		usage:       "delete_user 'USERNAME'",
 	},
 	"import_csv": {
 		description: "import users from csv file into current table",
-		usage:       "import_csv PATH_TO_FILE",
+		usage:       "import_csv 'PATH_TO_FILE'",
+	},
+	"exit": {
+		description: "exits the program",
+		usage:       "exit",
 	},
 }
 
@@ -112,7 +123,7 @@ func listCommands(w io.Writer) {
 	fmt.Fprintln(w)
 	fmt.Fprint(w, "Commands:\n")
 	for _, k := range keys {
-		fmt.Fprintf(w, "%-15v : %10v\n", k, commands[k].description)
+		fmt.Fprintf(w, "     %-15v : %10v\n", k, commands[k].description)
 	}
 
 	fmt.Fprintln(w)
@@ -163,11 +174,19 @@ func showUsers(r *db.SQLiteRepository, w io.Writer) {
 }
 
 /*
-	Inserts a new Entry into the base, granted that the params are valid
+	Inserts a new user's Entry into the current table, granted that the
+	 params are valid
 */
 
-func insertEntry(r *db.SQLiteRepository, w io.Writer, params []string) {
-	e, err := db.NewEntry(params[0], params[1], params[2])
+func addUser(r *db.SQLiteRepository, w io.Writer, params string) {
+	fields := strings.Split(params, ",")
+	if len(fields) != 3 {
+		msg := "not enough fields provided"
+		outputMessage(w, '-', msg)
+		return
+	}
+
+	e, err := db.NewEntry(fields[0], fields[1], fields[2])
 	if err != nil {
 		outputMessage(w, '-', err.Error())
 	} else {
@@ -182,10 +201,10 @@ func insertEntry(r *db.SQLiteRepository, w io.Writer, params []string) {
 }
 
 /*
-	Delete an Entry from the database given a valid username.
+	Delete an user's Entry from the database given a valid username.
 */
 
-func deleteEntry(r *db.SQLiteRepository, w io.Writer, username string) {
+func deleteUser(r *db.SQLiteRepository, w io.Writer, username string) {
 	e, err := r.GetByUsername(username)
 	if err != nil {
 		outputMessage(w, '-', err.Error())
@@ -210,7 +229,6 @@ func clearTable(r *db.SQLiteRepository, w io.Writer) {
 	} else {
 		msg := fmt.Sprintf("%v was cleared sucessfully", r.CurrentTable())
 		outputMessage(w, '+', msg)
-
 	}
 }
 

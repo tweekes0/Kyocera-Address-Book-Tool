@@ -35,79 +35,56 @@ Loop:
 			break
 		}
 
-		args := parseArgs(line)
-		if  len(args) == 0 {
+		command, param := parseArgs(line)
+		if command == "" {
 			continue
 		}
 
-		command := args[0]
-
-		switch command {
-		case "create_table":
-			if len(args) != 2 {
-				helpCommand(w, command)
-				continue
-			}
-			tableName := args[1]
-			createTable(r, w, tableName)
-		case "switch_table":
-			if len(args) != 2 {
-				helpCommand(w, command)
-				continue
-			}
-			tableName := args[1]
-			switchTable(r, w, tableName)
-		case "clear_table":
-			clearTable(r, w)
-		case "delete_table":
-			if len(args) != 2 {
-				helpCommand(w, command)
-				continue
-			}
-			tableName := args[1]
-			deleteTable(r, w, tableName)
-		case "list_tables":
-			listTables(r, w)
-		case "show_users":
-			showUsers(r, w)
-		case "add_user":
-			params := parseInsertArgs(line)
-			if len(params) != 3 {
-				helpCommand(w, command)
-				continue
-			}
-			insertEntry(r, w, params)
-		case "delete_user":
-			if len(args) != 2 {
-				helpCommand(w, command)
-				continue
-			}
-			username := args[1]
-			deleteEntry(r, w, username)
-		case "import_csv":
-			if len(args) != 2 {
-				helpCommand(w, command)
-				continue
-			}
-			f, err := os.Open(args[1])
-			if err != nil {
-				outputMessage(w, '-', err.Error())
-				continue
-			}
-	
-			importCSV(r, f, w)
-		case "quit":
-			fmt.Fprint(w, "Bye!\n\n")
-			break Loop
-		case "help":
-			if len(args) == 2 {
-				helpCommand(w, args[1])
-			} else {
+		switch {
+		case param == "":
+			switch command {
+			case "clear_table":
+				clearTable(r, w)
+			case "list_tables":
+				listTables(r, w)
+			case "show_users":
+				showUsers(r, w)
+			case "help":
 				listCommands(w)
+			case "quit":
+				break Loop
+			case "create_table", "switch_table", "delete_table", "add_user",
+				"delete_user", "import_csv":
+				helpCommand(w, command)
+			default:
+				helpUser(w)
+
 			}
-		default:
-			msg := "type 'help' for a list of commands"
-			outputMessage(w, '!', msg)
+
+		case param != "":
+			switch command {
+			case "create_table":
+				createTable(r, w, param)
+			case "switch_table":
+				switchTable(r, w, param)
+			case "delete_table":
+				deleteTable(r, w, param)
+			case "add_user":
+				addUser(r, w, param)
+			case "delete_user":
+				deleteUser(r, w, param)
+			case "import_csv":
+				f, err := os.Open(param)
+				if err != nil {
+					outputMessage(w, '-', err.Error())
+					continue
+				}
+				importCSV(r, f, w)
+			case "help":
+				helpCommand(w, param)
+			default:
+				helpUser(w)
+			}
 		}
 	}
 }
@@ -133,30 +110,6 @@ func newReadLine() *readline.Instance {
 }
 
 /*
-	Returns a slice of strings that are separated by spaces
-*/
-
-func parseArgs(s string) []string {
-	return strings.Fields(s)
-}
-
-/*
-	Returns slice of strings from a string that is separated by commas
-*/
-
-func parseInsertArgs(s string) []string {
-	sf := strings.Fields(s)
-	f := strings.Join(sf[1:], " ")
-	params := []string{}
-
-	for _, str := range strings.Split(f, ",") {
-		params = append(params, strings.TrimSpace(str))
-	}
-
-	return params
-}
-
-/*
 	Outputs message to the user.
 		+ indicates success
 		- indicates error
@@ -167,3 +120,45 @@ func outputMessage(w io.Writer, symbol rune, msg string) {
 	fmt.Fprintf(w, "[%v] %v\n\n", string(symbol), msg)
 }
 
+/*
+	Remove the quotes from the supplied string
+*/
+
+func stripQuotes(s string) string {
+	s = strings.Replace(s, `"`, "", -1)
+	s = strings.Replace(s, `'`, "", -1)
+	s = strings.Replace(s, "`", "", -1)
+
+	return s
+}
+
+/*
+	Take a from user input and returns two strings a command and it's optional
+	parameter
+*/
+
+func parseArgs(s string) (command string, param string) {
+	fields := strings.Fields(s)
+	if len(fields) == 0 {
+		command = ""
+		param = ""
+		return
+	}
+
+	if len(fields) == 1 {
+		command = fields[0]
+		param = ""
+		return
+	}
+
+	command = fields[0]
+	param = strings.Join(fields[1:], " ")
+	param = stripQuotes(param)
+
+	return
+}
+
+func helpUser(w io.Writer) {
+	msg := "type 'help' for a list of commands"
+	outputMessage(w, '!', msg)
+}

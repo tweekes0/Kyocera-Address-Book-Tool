@@ -42,7 +42,7 @@ const (
 	update          = "UPDATE %v SET name=?, username=?, email=? WHERE username=?;"
 	delete          = "DELETE FROM %v WHERE username=?;"
 	selectAll       = "SELECT * FROM %v;"
-	selectTable    = "SELECT name FROM sqlite_master WHERE type='table' AND name=?;"
+	selectTable     = "SELECT name FROM sqlite_master WHERE type='table' AND name=?;"
 	selectByUername = "SELECT * FROM %v WHERE username=?;"
 	createTable     = `CREATE TABLE IF NOT EXISTS %v (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,10 +61,11 @@ const (
 */
 
 const (
-	namePattern     = "^[a-zA-Z]+([ ]?[a-zA-Z]+)*$"
-	usernamePattern = "^[a-zA-Z]+([\\._-]?[a-zA-Z0-9])*$"
-	emailPattern    = "^[a-zA-Z]+([\\._-]?[a-zA-Z0-9])+@[a-zA-Z]+(\\.[a-zA-Z]+)+$"
-	tablePattern    = "^[a-zA-Z0-9]{2,}([-_]{1}[a-zA-Z0-9]+)*$"
+	namePattern         = `^[a-zA-Z]+([ ]?[a-zA-Z]+)*$`
+	usernamePattern     = `^[a-zA-Z]+([\._-]?[a-zA-Z0-9])*$`
+	emailPattern        = `^[a-zA-Z]+([\._-]?[a-zA-Z0-9])+@[a-zA-Z]+(\.[a-zA-Z]+)+$`
+	tablePattern        = `^[a-zA-Z_]?([a-zA-Z0-9]+[_]?)*$`
+	bracketTablePattern = `^[\[][a-zA-Z0-9]+([ +!?._\-a-zA-Z0-9])*[\]]$`
 )
 
 var (
@@ -187,11 +188,13 @@ func setupWithInserts(t *testing.T) (*SQLiteRepository, func()) {
 */
 
 func validateTableName(tableName string) error {
-	re := regexp.MustCompile(tablePattern)
+	pat1 := regexp.MustCompile(tablePattern)
+	pat2 := regexp.MustCompile(bracketTablePattern)
 
-	if !re.MatchString(tableName) || strings.Contains(tableName, "sql") {
-		return ErrInvalidTableName
+	if pat1.MatchString(tableName) || pat2.MatchString(tableName) &&
+		!strings.Contains(tableName, "sql") {
+		return nil
 	}
 
-	return nil
+	return ErrInvalidTableName
 }

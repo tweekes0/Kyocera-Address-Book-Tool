@@ -233,10 +233,6 @@ func TestNewTable(t *testing.T) {
 	repo, teardown := setup(t)
 	defer teardown()
 
-	err1 := repo.NewTable("valid_table_name")
-	err2 := repo.NewTable("____invalid_table_name")
-	err3 := repo.NewTable(DEFAULT_TABLE)
-
 	tt := []struct {
 		description string
 		got         error
@@ -244,17 +240,22 @@ func TestNewTable(t *testing.T) {
 	}{
 		{
 			description: "create table with valid name",
-			got:         err1,
+			got:         repo.NewTable("valid_table_name"),
+			expected:    nil,
+		},
+		{
+			description: "create table with bracket name",
+			got:         repo.NewTable("[Almost_anything can go here123123]"),
 			expected:    nil,
 		},
 		{
 			description: "create table with invalid name",
-			got:         err2,
+			got:         repo.NewTable("__invalid_table_name"),
 			expected:    ErrInvalidTableName,
 		},
 		{
 			description: "create table with a existing name",
-			got:         err3,
+			got:         repo.NewTable(DEFAULT_TABLE),
 			expected:    ErrTableExists,
 		},
 	}
@@ -276,7 +277,7 @@ func TestSwitchTable(t *testing.T) {
 	err1 := repo.SwitchTable("another_table")
 	tn1 := repo.currentTable
 
-	err2 := repo.SwitchTable("non-existing-table")
+	err2 := repo.SwitchTable("nonexisting_table")
 	tn2 := repo.currentTable
 
 	err3 := repo.SwitchTable("--Invalid_table--")
@@ -321,7 +322,7 @@ func TestTableExists(t *testing.T) {
 	_, err1 := repo.TableExists(DEFAULT_TABLE)
 	_, err2 := repo.TableExists("new_table")
 	_, err3 := repo.TableExists(";--invalid_table;--")
-	_, err4 := repo.TableExists("non-existing-table")
+	_, err4 := repo.TableExists("non_existing_table")
 
 	tt := []struct {
 		description string
@@ -386,7 +387,7 @@ func TestDeleteTable(t *testing.T) {
 	err2 := repo.DeleteTable(DEFAULT_TABLE)
 
 	t3 := repo.currentTable
-	err3 := repo.DeleteTable("non-existing_table")
+	err3 := repo.DeleteTable("non_existing_table")
 
 	tt := []struct {
 		description string

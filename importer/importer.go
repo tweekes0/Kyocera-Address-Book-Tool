@@ -13,6 +13,8 @@ import (
 var (
 	ErrInvalidHeader       = errors.New("invalid header")
 	ErrInvalidHeaderLength = errors.New("invalid header length")
+	ErrInvalidRowLength    = errors.New("invalid row length")
+	ErrNoRowsInFile        = errors.New("there are no rows in this file")
 )
 
 /*
@@ -25,20 +27,10 @@ func checkCSVHeader(header []string) error {
 		return ErrInvalidHeaderLength
 	}
 
+	valid := []string{"name", "username", "email"}
 	for i := range header {
-		switch i {
-		case 0:
-			if strings.ToLower(header[i]) != "name" {
-				return ErrInvalidHeader
-			}
-		case 1:
-			if strings.ToLower(header[i]) != "username" {
-				return ErrInvalidHeader
-			}
-		case 2:
-			if strings.ToLower(header[i]) != "email" {
-				return ErrInvalidHeader
-			}
+		if strings.ToLower(header[i]) != valid[i] {
+			return ErrInvalidHeader
 		}
 	}
 
@@ -50,6 +42,10 @@ func checkCSVHeader(header []string) error {
 */
 
 func csvToEntry(row []string) (*db.Entry, error) {
+	if len(row) != 3 {
+		return nil, ErrInvalidRowLength
+	}
+
 	e, err := db.NewEntry(row[0], row[1], row[2])
 
 	if err != nil {
@@ -79,6 +75,10 @@ func ImportCSV(rd io.Reader) ([]*db.Entry, error) {
 	rows, err := csvReader.ReadAll()
 	if err != nil {
 		return nil, err
+	}
+
+	if len(rows) == 0 {
+		return nil, ErrNoRowsInFile
 	}
 
 	var entries []*db.Entry

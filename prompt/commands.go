@@ -100,7 +100,7 @@ var commands = map[string]struct {
 func helpCommand(w io.Writer, s string) {
 	if command, ok := commands[s]; ok {
 		fmt.Fprintf(w, "\n%v", command.description)
-		fmt.Fprintf(w, "\nusage: %v\n", command.usage)
+		fmt.Fprintf(w, "\nusage: %v\n\n", command.usage)
 	} else {
 		listCommands(w)
 	}
@@ -176,13 +176,13 @@ func showUsers(r *db.SQLiteRepository, w io.Writer) {
 
 /*
 	Inserts a new user's Entry into the current table, granted that the
-	 params are valid
+	params are valid
 */
 
 func addUser(r *db.SQLiteRepository, w io.Writer, params string) {
 	fields := strings.Split(params, ",")
 	if len(fields) != 3 {
-		msg := "not enough fields provided"
+		msg := "invalid number of fields"
 		outputMessage(w, '-', msg)
 		return
 	}
@@ -209,7 +209,9 @@ func deleteUser(r *db.SQLiteRepository, w io.Writer, username string) {
 	e, err := r.GetByUsername(username)
 	if err != nil {
 		outputMessage(w, '-', err.Error())
+		return	
 	}
+	
 	err = r.Delete(username)
 	if err != nil {
 		outputMessage(w, '-', err.Error())

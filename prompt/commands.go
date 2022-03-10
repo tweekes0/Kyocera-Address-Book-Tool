@@ -68,7 +68,7 @@ var commands = map[string]struct {
 	},
 	"list_tables": {
 		description: "list all tables",
-		usage:       "list_table",
+		usage:       "list_tables",
 	},
 	"show_users": {
 		description: "show all the users in the current table",
@@ -99,10 +99,8 @@ var commands = map[string]struct {
 
 func helpCommand(w io.Writer, s string) {
 	if command, ok := commands[s]; ok {
-		fmt.Fprintln(w)
-		fmt.Fprintf(w, "%v\n", command.description)
-		fmt.Fprintf(w, "usage: %v\n", command.usage)
-		fmt.Fprintln(w)
+		fmt.Fprintf(w, "\n%v", command.description)
+		fmt.Fprintf(w, "\nusage: %v\n", command.usage)
 	} else {
 		listCommands(w)
 	}
@@ -120,13 +118,12 @@ func listCommands(w io.Writer) {
 
 	sort.Strings(keys)
 
-	fmt.Fprintln(w)
-	fmt.Fprint(w, "Commands:\n")
+	fmt.Fprint(w, "\nCommands:\n")
 	for _, k := range keys {
 		fmt.Fprintf(w, "     %-15v : %10v\n", k, commands[k].description)
 	}
 
-	fmt.Fprintln(w)
+	fmt.Fprint(w, "\n")
 }
 
 /*
@@ -161,9 +158,13 @@ func switchTable(r *db.SQLiteRepository, w io.Writer, tableName string) {
 
 func showUsers(r *db.SQLiteRepository, w io.Writer) {
 	all, err := r.All()
-	if err != nil {
+	switch {
+	case err != nil:
 		outputMessage(w, '-', err.Error())
-	} else {
+	case len(all) == 0:
+		msg := fmt.Sprintf("%v is empty", r.CurrentTable())
+		outputMessage(w, '!', msg)
+	default:
 		// TODO: implement pretty way to print all the entries
 		msg := fmt.Sprintf("contents of %v", r.CurrentTable())
 		outputMessage(w, '+', msg)

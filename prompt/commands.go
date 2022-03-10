@@ -211,7 +211,7 @@ func deleteUser(r *db.SQLiteRepository, w io.Writer, username string) {
 		outputMessage(w, '-', err.Error())
 		return	
 	}
-	
+
 	err = r.Delete(username)
 	if err != nil {
 		outputMessage(w, '-', err.Error())
@@ -226,13 +226,10 @@ func deleteUser(r *db.SQLiteRepository, w io.Writer, username string) {
 */
 
 func clearTable(r *db.SQLiteRepository, w io.Writer) {
-	err := r.ClearTable()
-	if err != nil {
-		outputMessage(w, '-', err.Error())
-	} else {
-		msg := fmt.Sprintf("%v was cleared sucessfully", r.CurrentTable())
-		outputMessage(w, '+', msg)
-	}
+	r.ClearTable()
+
+	msg := fmt.Sprintf("%v was cleared sucessfully", r.CurrentTable())
+	outputMessage(w, '+', msg)
 }
 
 /*

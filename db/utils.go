@@ -148,10 +148,6 @@ func setup(t *testing.T) (*SQLiteRepository, func()) {
 		log.Fatalf("could not open sqlite db: %q", err)
 	}
 
-	teardown := func() {
-		os.Remove(f.Name())
-	}
-
 	entryRepo, err := NewSQLiteRepository(db)
 	if err != nil {
 		log.Fatalf("could not create db connection: %q", err)
@@ -162,6 +158,10 @@ func setup(t *testing.T) (*SQLiteRepository, func()) {
 		log.Fatalf("could not initialize sqlite db: %q", err)
 	}
 
+	teardown := func() {
+		os.Remove(f.Name())
+	}
+
 	return entryRepo, teardown
 }
 
@@ -170,7 +170,7 @@ func setup(t *testing.T) (*SQLiteRepository, func()) {
 	clean up function.
 */
 
-func setupWithInserts(t *testing.T) (*SQLiteRepository, func()) {
+func SetupWithInserts(t *testing.T) (*SQLiteRepository, func()) {
 	entryRepo, teardown := setup(t)
 
 	_, err := entryRepo.Insert(*e1)

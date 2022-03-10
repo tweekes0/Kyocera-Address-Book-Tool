@@ -50,7 +50,7 @@ func TestInsert(t *testing.T) {
 	})
 
 	t.Run("insert into new table", func(t *testing.T) {
-		repo, teardown := setupWithInserts(t)
+		repo, teardown := SetupWithInserts(t)
 		defer teardown()
 
 		err := repo.NewTable("new_table")
@@ -71,7 +71,7 @@ func TestInsert(t *testing.T) {
 }
 
 func TestAll(t *testing.T) {
-	repo, teardown := setupWithInserts(t)
+	repo, teardown := SetupWithInserts(t)
 	defer teardown()
 
 	entries := []*Entry{e1, e2, e3}
@@ -85,7 +85,7 @@ func TestAll(t *testing.T) {
 }
 
 func TestGetByUsername(t *testing.T) {
-	repo, teardown := setupWithInserts(t)
+	repo, teardown := SetupWithInserts(t)
 	defer teardown()
 
 	found, foundErr := repo.GetByUsername("username1")
@@ -140,7 +140,7 @@ func TestGetByUsername(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	repo, teardown := setupWithInserts(t)
+	repo, teardown := SetupWithInserts(t)
 	defer teardown()
 
 	updated, err := newTestEntry(1, "new name", "newUsername", "newemail@test.com")
@@ -186,7 +186,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	repo, teardown := setupWithInserts(t)
+	repo, teardown := SetupWithInserts(t)
 	defer teardown()
 
 	foundErr := repo.Delete("username1")
@@ -273,7 +273,7 @@ func TestNewTable(t *testing.T) {
 }
 
 func TestSwitchTable(t *testing.T) {
-	repo, teardown := setupWithInserts(t)
+	repo, teardown := SetupWithInserts(t)
 	defer teardown()
 
 	err := repo.NewTable("another_table")
@@ -362,7 +362,7 @@ func TestTableExists(t *testing.T) {
 }
 
 func TestClearTable(t *testing.T) {
-	repo, teardown := setupWithInserts(t)
+	repo, teardown := SetupWithInserts(t)
 	defer teardown()
 
 	t.Run("clear table", func(t *testing.T) {

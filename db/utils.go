@@ -104,7 +104,7 @@ var (
 	ErrInvalidTableName     = errors.New("tablename is not valid")
 	ErrTableExists          = errors.New("table already exists")
 	ErrTableDoesNotExist    = errors.New("table does not exist")
-	ErrTableCannotBeDeleted = errors.New("this table cannot be deleted")
+	ErrTableCannotBeDeleted = errors.New("table cannot be deleted")
 )
 
 func assertError(t testing.TB, got, expected error) {

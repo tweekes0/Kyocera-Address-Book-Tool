@@ -109,19 +109,19 @@ func TestImportCSV(t *testing.T) {
 		{"name", "username", "email"},
 	}
 
-	f1, td1 := setupCSV(t, csv1)
+	f1, td1 := SetupCSV(t, csv1)
 	_, err1 := ImportCSV(f1)
 	defer td1()
 
-	f2, td2 := setupCSV(t, csv2)
+	f2, td2 := SetupCSV(t, csv2)
 	_, err2 := ImportCSV(f2)
 	defer td2()
 
-	f3, td3 := setupCSV(t, csv3)
+	f3, td3 := SetupCSV(t, csv3)
 	_, err3 := ImportCSV(f3)
 	defer td3()
 
-	f4, td4 := setupCSV(t, csv4)
+	f4, td4 := SetupCSV(t, csv4)
 	_, err4 := ImportCSV(f4)
 	defer td4()
 

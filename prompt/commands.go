@@ -216,7 +216,7 @@ func deleteUser(r *db.SQLiteRepository, w io.Writer, username string) {
 	if err != nil {
 		outputMessage(w, '-', err.Error())
 	} else {
-		msg := fmt.Sprintf("%v was deleted sucessfully", e.Name)
+		msg := fmt.Sprintf("%v was deleted successfully", e.Name)
 		outputMessage(w, '+', msg)
 	}
 }
@@ -228,7 +228,7 @@ func deleteUser(r *db.SQLiteRepository, w io.Writer, username string) {
 func clearTable(r *db.SQLiteRepository, w io.Writer) {
 	r.ClearTable()
 
-	msg := fmt.Sprintf("%v was cleared sucessfully", r.CurrentTable())
+	msg := fmt.Sprintf("%v was cleared successfully", r.CurrentTable())
 	outputMessage(w, '+', msg)
 }
 
@@ -289,4 +289,13 @@ func importCSV(r *db.SQLiteRepository, rd io.Reader, w io.Writer) {
 	msg := fmt.Sprintf("import completed successfully. %d entries added.",
 		len(entries))
 	outputMessage(w, '+', msg)
+}
+
+/*
+	Writes a help message to w, typically os.Stdout
+*/
+
+func helpUser(w io.Writer) {
+	msg := "type 'help' for a list of commands"
+	outputMessage(w, '!', msg)
 }

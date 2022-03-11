@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func setupCSV(t *testing.T, data [][]string) (io.ReadWriter, func()) {
+func SetupCSV(t *testing.T, data [][]string) (io.ReadWriter, func()) {
 	
 	f, err := ioutil.TempFile("", "")
 	if err != nil {

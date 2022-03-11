@@ -7,28 +7,29 @@ import (
 	"testing"
 
 	"github.com/kitar0s/kyocera-ab-tool/db"
+	"github.com/kitar0s/kyocera-ab-tool/importer"
 )
 
 func TestHelpCommand(t *testing.T) {
 	tt := []struct {
 		description string
-		got         string
+		input       string
 		expected    string
 	}{
 		{
 			description: "help command for create_table",
-			got:         "create_table",
-			expected:    "\ncreates new table and sets it to the current table\nusage: create_table 'TABLE_NAME'\n",
+			input:       "create_table",
+			expected:    "\ncreates new table and sets it to the current table\nusage: create_table 'TABLE_NAME'\n\n",
 		},
 		{
 			description: "help command for switch_table",
-			got:         "switch_table",
-			expected:    "\nswitch the current table\nusage: switch_table 'TABLE_NAME'\n",
+			input:       "switch_table",
+			expected:    "\nswitch the current table\nusage: switch_table 'TABLE_NAME'\n\n",
 		},
 		{
 			description: "help command for list_tables",
-			got:         "list_tables",
-			expected:    "\nlist all tables\nusage: list_tables\n",
+			input:       "list_tables",
+			expected:    "\nlist all tables\nusage: list_tables\n\n",
 		},
 	}
 
@@ -36,11 +37,11 @@ func TestHelpCommand(t *testing.T) {
 		t.Run(tc.description, func(t *testing.T) {
 			t.Parallel()
 
-			var buf bytes.Buffer
-			helpCommand(&buf, tc.got)
+			var got bytes.Buffer
+			helpCommand(&got, tc.input)
 
-			if buf.String() != tc.expected {
-				t.Fatalf("got: %v, expected: %v", buf.String(), tc.expected)
+			if got.String() != tc.expected {
+				t.Fatalf("got: %v, expected: %v", got.String(), tc.expected)
 			}
 		})
 	}
@@ -82,10 +83,10 @@ func TestListCommands(t *testing.T) {
 	}
 	sort.Strings(keys)
 
-	var buf bytes.Buffer
+	var got bytes.Buffer
 	var expected bytes.Buffer
 
-	listCommands(&buf)
+	listCommands(&got)
 
 	expected.WriteString("\nCommands:\n")
 
@@ -95,8 +96,8 @@ func TestListCommands(t *testing.T) {
 	}
 	expected.WriteString("\n")
 
-	if buf.String() != expected.String() {
-		t.Fatalf("got: %v, expected: %v", buf.String(), expected.String())
+	if got.String() != expected.String() {
+		t.Fatalf("got: %v, expected: %v", got.String(), expected.String())
 	}
 }
 
@@ -106,22 +107,22 @@ func TestCreateTable(t *testing.T) {
 
 	tt := []struct {
 		description string
-		got         string
+		input       string
 		expected    string
 	}{
 		{
 			description: "create a valid table",
-			got:         "valid_table",
+			input:       "valid_table",
 			expected:    "[+] valid_table was created successfully\n\n",
 		},
 		{
 			description: "create an existing table",
-			got:         db.DEFAULT_TABLE,
+			input:       db.DEFAULT_TABLE,
 			expected:    "[-] table already exists\n\n",
 		},
 		{
 			description: "create an invalid table",
-			got:         "--invalid--",
+			input:       "--invalid--",
 			expected:    "[-] tablename is not valid\n\n",
 		},
 	}
@@ -129,11 +130,11 @@ func TestCreateTable(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.description, func(t *testing.T) {
 
-			var buf bytes.Buffer
-			createTable(repo, &buf, tc.got)
+			var got bytes.Buffer
+			createTable(repo, &got, tc.input)
 
-			if buf.String() != tc.expected {
-				t.Fatalf("got: %v, expected: %v", buf.String(), tc.expected)
+			if got.String() != tc.expected {
+				t.Fatalf("got: %v, expected: %v", got.String(), tc.expected)
 			}
 		})
 	}
@@ -145,22 +146,22 @@ func TestSwitchTable(t *testing.T) {
 
 	tt := []struct {
 		description string
-		got         string
+		input       string
 		expected    string
 	}{
 		{
 			description: "switch to an existing table",
-			got:         db.DEFAULT_TABLE,
+			input:       db.DEFAULT_TABLE,
 			expected:    "",
 		},
 		{
 			description: "switch to an non-existing table",
-			got:         "non_existing_table",
+			input:       "non_existing_table",
 			expected:    "[-] table does not exist\n\n",
 		},
 		{
 			description: "switch to an invalid table",
-			got:         "--invalid--",
+			input:       "--invalid--",
 			expected:    "[-] tablename is not valid\n\n",
 		},
 	}
@@ -168,11 +169,11 @@ func TestSwitchTable(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.description, func(t *testing.T) {
 
-			var buf bytes.Buffer
-			switchTable(repo, &buf, tc.got)
+			var got bytes.Buffer
+			switchTable(repo, &got, tc.input)
 
-			if buf.String() != tc.expected {
-				t.Fatalf("got: %v, expected: %v", buf.String(), tc.expected)
+			if got.String() != tc.expected {
+				t.Fatalf("got: %v, expected: %v", got.String(), tc.expected)
 			}
 		})
 	}
@@ -216,4 +217,234 @@ func TestShowUser(t *testing.T) {
 			t.Fatalf("got: %v, expected: %v", got.String(), expected.String())
 		}
 	})
+}
+
+func TestAddUser(t *testing.T) {
+	repo, teardown := db.SetupWithInserts(t)
+	defer teardown()
+
+	tt := []struct {
+		description string
+		input       string
+		expected    string
+	}{
+		{
+			description: "add valid user",
+			input:       "jane doe,jdoe,jdoe@email.com",
+			expected:    "[+] jane doe was added successfully\n\n",
+		},
+		{
+			description: "add existing user",
+			input:       "jane doe,jdoe,jdoe@email.com",
+			expected:    "[-] record already exists\n\n",
+		},
+		{
+			description: "add invalid user",
+			input:       "jane 1,jdoe,jdoe@email.com",
+			expected:    "[-] name is not valid\n\n",
+		},
+		{
+			description: "add user with too few fields ",
+			input:       "jane 1,jdoe",
+			expected:    "[-] invalid number of fields\n\n",
+		},
+	}
+
+	for _, tc := range tt {
+		var got bytes.Buffer
+
+		t.Run(tc.description, func(t *testing.T) {
+			addUser(repo, &got, tc.input)
+
+			if got.String() != tc.expected {
+				t.Fatalf("got: %v, expected: %v", got.String(), tc.expected)
+			}
+		})
+	}
+}
+
+func TestDeleteUser(t *testing.T) {
+	repo, teardown := db.SetupWithInserts(t)
+	defer teardown()
+
+	tt := []struct {
+		description string
+		input       string
+		expected    string
+	}{
+		{
+			description: "delete a valid user",
+			input:       "username1",
+			expected:    "[+] Test One was deleted successfully\n\n",
+		},
+		{
+			description: "delete a non-existing user",
+			input:       "username1",
+			expected:    "[-] record does not exist\n\n",
+		},
+		{
+			description: "delete an invalid user",
+			input:       "--invalid--",
+			expected:    "[-] username is not valid\n\n",
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.description, func(t *testing.T) {
+			var got bytes.Buffer
+			deleteUser(repo, &got, tc.input)
+
+			if got.String() != tc.expected {
+				t.Fatalf("got: %v, expected: %v", got.String(), tc.expected)
+			}
+		})
+	}
+}
+
+func TestClearTable(t *testing.T) {
+	repo, teardown := db.SetupWithInserts(t)
+	defer teardown()
+
+	var got, expected bytes.Buffer
+	expected.WriteString(fmt.Sprintf("[+] %v was cleared successfully\n\n",
+		repo.CurrentTable()))
+	clearTable(repo, &got)
+
+	all, _ := repo.All()
+
+	if got.String() != expected.String() {
+		t.Fatalf("got: %v, expected: %v", got.String(), expected.String())
+	}
+
+	if len(all) != 0 {
+		t.Fatalf("got: %v, expected: %v", all, []*db.Entry{})
+	}
+}
+
+func TestDeleteTable(t *testing.T) {
+	repo, teardown := db.SetupWithInserts(t)
+	defer teardown()
+
+	repo.NewTable("valid")
+
+	tt := []struct {
+		description string
+		input       string
+		expected    string
+	}{
+		{
+			description: "delete default table",
+			input:       db.DEFAULT_TABLE,
+			expected:    "[-] table cannot be deleted\n\n",
+		},
+		{
+			description: "delete valid table",
+			input:       "valid",
+			expected:    "[+] valid was deleted successfully\n\n",
+		},
+		{
+			description: "delete invalid table",
+			input:       "--invalid",
+			expected:    "[-] tablename is not valid\n\n",
+		},
+	}
+
+	for _, tc := range tt {
+		var got bytes.Buffer
+		deleteTable(repo, &got, tc.input)
+
+		if got.String() != tc.expected {
+			t.Fatalf("got: %v, expected: %v", got.String(), tc.expected)
+		}
+	}
+}
+
+func TestListTables(t *testing.T) {
+	repo, teardown := db.SetupWithInserts(t)
+	defer teardown()
+
+	repo.NewTable("another_table")
+	repo.NewTable("last_table")
+
+	tables := []string{"default_table", "another_table", "last_table"}
+	var got, expected bytes.Buffer
+
+	expected.WriteString("\nTables:\n")
+	for _, table := range tables {
+		expected.WriteString(fmt.Sprintf("     %v\n", table))
+	}
+	expected.WriteString("\n")
+
+	listTables(repo, &got)
+
+	if got.String() != expected.String() {
+		t.Fatalf("got: %v, expected: %v", got.String(), expected.String())
+	}
+}
+
+func TestImportCSV(t *testing.T) {
+	repo, teardown := db.SetupWithInserts(t)
+	defer teardown()
+
+	csv1 := [][]string{
+		{"name", "username", "email"},
+		{"Jane Doe", "janedoe", "janedoe@email.com"},
+		{"John Doe", "johndoe", "johndoe@email.com"},
+	}
+
+	csv2 := [][]string{
+		{"invalid", "username", "email"},
+		{"valid name", "janedoe", "janedoe@email.com"},
+	}
+
+	tt := []struct {
+		description string
+		input [][]string
+		expected string
+	} {
+		{
+			description: "import valid csv",
+			input: csv1,
+			expected: "[+] import completed successfully. 2 entries added.\n\n",
+		},
+		{
+			description: "import csv with invalid header",
+			input: csv2,
+			expected: "[-] invalid header\n\n",
+		},
+		{
+			description: "import csv with existing entry",
+			input: csv1,
+			expected: "[-] Entry on line 2 already exists\n\n",
+		},
+	}
+
+	for _, tc := range tt {
+
+		t.Run(tc.description, func(t *testing.T) {
+			r, td := importer.SetupCSV(t, tc.input)
+			defer td()
+
+			var got bytes.Buffer
+			importCSV(repo, r, &got)
+
+			if got.String() != tc.expected {
+				t.Fatalf("got: %v, expected: %v", got.String(), tc.expected)
+			}
+
+		})
+	}
+}
+
+func TestHelpUser(t *testing.T) {
+	t.Parallel()
+	
+	var got bytes.Buffer
+	expected := "[!] type 'help' for a list of commands\n\n"
+
+	helpUser(&got)
+
+	if got.String() != expected {
+		t.Fatalf("got: %v, expected: %v", got.String(), expected)
+	}
 }

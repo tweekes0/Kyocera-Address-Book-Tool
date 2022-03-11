@@ -99,7 +99,6 @@ func newReadLine() *readline.Instance {
 		AutoComplete:    completions,
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
-
 		HistorySearchFold: true,
 	})
 	if err != nil {
@@ -156,9 +155,4 @@ func parseArgs(s string) (command string, param string) {
 	param = stripQuotes(param)
 
 	return
-}
-
-func helpUser(w io.Writer) {
-	msg := "type 'help' for a list of commands"
-	outputMessage(w, '!', msg)
 }

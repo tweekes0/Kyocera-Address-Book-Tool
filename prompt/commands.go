@@ -59,12 +59,12 @@ var commands = map[string]struct {
 		usage:       "switch_table 'TABLE_NAME'",
 	},
 	"clear_table": {
-		description: "clear the current table of all entries",
+		description: "clears all users from the current table",
 		usage:       "clear_table",
 	},
 	"delete_table": {
-		description: "clear the current table of all entries",
-		usage:       "clear_table",
+		description: "deletes the specified table",
+		usage:       "delete_table 'TABLE_NAME'",
 	},
 	"list_tables": {
 		description: "list all tables",

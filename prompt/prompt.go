@@ -15,8 +15,8 @@ import (
 	Driver for terminal application
 */
 
-func Prompt(r *db.SQLiteRepository, w io.Writer) {
-	l := newReadLine()
+func Prompt(r *db.SQLiteRepository, rd io.ReadCloser, w io.Writer) {
+	l := newReadLine(rd)
 	defer l.Close()
 
 Loop:
@@ -93,13 +93,14 @@ Loop:
 	Returns customized readline instance.
 */
 
-func newReadLine() *readline.Instance {
+func newReadLine(rd io.ReadCloser) *readline.Instance {
 	l, err := readline.NewEx(&readline.Config{
-		Prompt:          "",
-		AutoComplete:    completions,
-		InterruptPrompt: "^C",
-		EOFPrompt:       "exit",
+		Prompt:            "",
+		AutoComplete:      completions,
+		InterruptPrompt:   "^C",
+		EOFPrompt:         "exit",
 		HistorySearchFold: true,
+		Stdin:             rd,
 	})
 	if err != nil {
 		log.Fatalf("could not create readline: %q", err)

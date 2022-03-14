@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/kitar0s/kyocera-ab-tool/db"
+	"github.com/tweekes0/kyocera-ab-tool/db"
 )
 
 func TestCheckCSVHeader(t *testing.T) {

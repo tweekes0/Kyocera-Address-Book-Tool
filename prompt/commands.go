@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
-	"github.com/kitar0s/kyocera-ab-tool/db"
-	"github.com/kitar0s/kyocera-ab-tool/importer"
+	"github.com/tweekes0/kyocera-ab-tool/db"
+	"github.com/tweekes0/kyocera-ab-tool/importer"
 )
 
 /*

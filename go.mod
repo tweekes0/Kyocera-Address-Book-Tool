@@ -1,4 +1,4 @@
-module github.com/kitar0s/kyocera-ab-tool
+module github.com/tweekes0/kyocera-ab-tool
 
 go 1.17
 

@@ -6,7 +6,7 @@ import (
 	"log"
 	"regexp"
 
-	db "github.com/kitar0s/kyocera-ab-tool/db"
+	db "github.com/tweekes0/kyocera-ab-tool/db"
 )
 
 var (

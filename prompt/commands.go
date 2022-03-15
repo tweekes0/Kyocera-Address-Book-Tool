@@ -9,6 +9,7 @@ import (
 
 	"github.com/chzyer/readline"
 	"github.com/tweekes0/kyocera-ab-tool/db"
+	"github.com/tweekes0/kyocera-ab-tool/exporter"
 	"github.com/tweekes0/kyocera-ab-tool/importer"
 )
 
@@ -21,6 +22,7 @@ var completions = readline.NewPrefixCompleter(
 	readline.PcItem("switch_table"),
 	readline.PcItem("clear_table"),
 	readline.PcItem("delete_table"),
+	readline.PcItem("export_table"),
 	readline.PcItem("list_tables"),
 	readline.PcItem("show_users"),
 	readline.PcItem("add_user"),
@@ -33,6 +35,7 @@ var completions = readline.NewPrefixCompleter(
 		readline.PcItem("switch_table"),
 		readline.PcItem("clear_table"),
 		readline.PcItem("delete_table"),
+		readline.PcItem("export_table"),
 		readline.PcItem("list_tables"),
 		readline.PcItem("show_users"),
 		readline.PcItem("add_user"),
@@ -65,6 +68,10 @@ var commands = map[string]struct {
 	"delete_table": {
 		description: "deletes the specified table",
 		usage:       "delete_table 'TABLE_NAME'",
+	},
+	"export_table": {
+		description: "exports the current table to an address book xml",
+		usage:       "export_table",
 	},
 	"list_tables": {
 		description: "list all tables",
@@ -209,7 +216,7 @@ func deleteUser(r *db.SQLiteRepository, w io.Writer, username string) {
 	e, err := r.GetByUsername(username)
 	if err != nil {
 		outputMessage(w, '-', err.Error())
-		return	
+		return
 	}
 
 	err = r.Delete(username)
@@ -262,7 +269,7 @@ func listTables(r *db.SQLiteRepository, w io.Writer) {
 }
 
 /*
-	Import csv entries into the current table
+	Import csv entries into the current table.
 */
 
 func importCSV(r *db.SQLiteRepository, rd io.Reader, w io.Writer) {
@@ -289,6 +296,29 @@ func importCSV(r *db.SQLiteRepository, rd io.Reader, w io.Writer) {
 	msg := fmt.Sprintf("import completed successfully. %d entries added.",
 		len(entries))
 	outputMessage(w, '+', msg)
+}
+
+/*
+	Converts the entries within the current table to XML and write it to the 
+	out io.Writer
+ */
+
+func exportTable(r *db.SQLiteRepository, w, out io.Writer) {
+	entries, err := r.All()
+
+	if err != nil {
+		outputMessage(w, '-', err.Error())
+		return
+	}
+
+	book, err := exporter.ExportAddressBook(entries)
+	if err != nil {
+		outputMessage(w, '-', err.Error())
+		return
+	}
+
+	s := exporter.ElementToString(book)
+	out.Write([]byte(s))
 }
 
 /*

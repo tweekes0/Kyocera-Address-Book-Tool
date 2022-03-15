@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/chzyer/readline"
 	"github.com/tweekes0/kyocera-ab-tool/db"
@@ -49,12 +50,41 @@ Loop:
 				listTables(r, w)
 			case "show_users":
 				showUsers(r, w)
+			case "export_table":
+				all, err := r.All()
+				if err != nil { 
+					outputMessage(w, '-', err.Error())
+				}
+
+				if len(all) == 0 {
+					msg := "cannot export empty table"
+					outputMessage(w, '-', msg)
+					continue
+				}
+
+				_, err = os.Stat("./Address Books")
+				if os.IsNotExist(err) {
+					if err = os.Mkdir("./Address Books", os.ModePerm); err != nil {
+						outputMessage(w, '-', err.Error())
+						continue
+					}
+				}
+
+				fname := fmt.Sprintf("./Address Books/%v %v.xml",
+					r.CurrentTable(), time.Now().Format("Jan 6, 2006"))
+
+				f, err := os.Create(fname)
+				if err != nil {
+					outputMessage(w, '-', err.Error())
+					continue
+				}
+				exportTable(r, w, f)
 			case "help":
 				listCommands(w)
 			case "quit":
 				break Loop
 			case "create_table", "switch_table", "delete_table", "add_user",
-				"delete_user", "import_csv":
+				 "delete_user", "import_csv":
 				helpCommand(w, command)
 			default:
 				helpUser(w)

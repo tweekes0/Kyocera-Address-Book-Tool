@@ -194,6 +194,10 @@ func addUser(r *db.SQLiteRepository, w io.Writer, params string) {
 		return
 	}
 
+	for i, field := range fields {
+		fields[i] = strings.TrimSpace(field)
+	}
+
 	e, err := db.NewEntry(fields[0], fields[1], fields[2])
 	if err != nil {
 		OutputMessage(w, '-', err.Error())

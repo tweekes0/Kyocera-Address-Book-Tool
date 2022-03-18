@@ -230,17 +230,17 @@ func TestAddUser(t *testing.T) {
 	}{
 		{
 			description: "add valid user",
-			input:       "jane doe,jdoe,jdoe@email.com",
+			input:       "jane doe, jdoe,jdoe@email.com",
 			expected:    "[+] jane doe was added successfully\n\n",
 		},
 		{
 			description: "add existing user",
-			input:       "jane doe,jdoe,jdoe@email.com",
+			input:       "jane doe,  jdoe  ,jdoe@email.com",
 			expected:    "[-] record already exists\n\n",
 		},
 		{
 			description: "add invalid user",
-			input:       "jane 1,jdoe,jdoe@email.com",
+			input:       "    jane 1,jdoe,jdoe@email.com",
 			expected:    "[-] name is not valid\n\n",
 		},
 		{

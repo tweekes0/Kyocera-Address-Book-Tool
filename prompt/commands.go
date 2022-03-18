@@ -141,10 +141,10 @@ func listCommands(w io.Writer) {
 func createTable(r *db.SQLiteRepository, w io.Writer, tableName string) {
 	err := r.NewTable(tableName)
 	if err != nil {
-		outputMessage(w, '-', err.Error())
+		OutputMessage(w, '-', err.Error())
 	} else {
 		msg := fmt.Sprintf("%v was created successfully", r.CurrentTable())
-		outputMessage(w, '+', msg)
+		OutputMessage(w, '+', msg)
 	}
 }
 
@@ -155,7 +155,7 @@ func createTable(r *db.SQLiteRepository, w io.Writer, tableName string) {
 func switchTable(r *db.SQLiteRepository, w io.Writer, tableName string) {
 	err := r.SwitchTable(tableName)
 	if err != nil {
-		outputMessage(w, '-', err.Error())
+		OutputMessage(w, '-', err.Error())
 	}
 }
 
@@ -167,14 +167,14 @@ func showUsers(r *db.SQLiteRepository, w io.Writer) {
 	all, err := r.All()
 	switch {
 	case err != nil:
-		outputMessage(w, '-', err.Error())
+		OutputMessage(w, '-', err.Error())
 	case len(all) == 0:
 		msg := fmt.Sprintf("%v is empty", r.CurrentTable())
-		outputMessage(w, '!', msg)
+		OutputMessage(w, '!', msg)
 	default:
 		// TODO: implement pretty way to print all the entries
 		msg := fmt.Sprintf("contents of %v", r.CurrentTable())
-		outputMessage(w, '+', msg)
+		OutputMessage(w, '+', msg)
 		for _, e := range all {
 			e.Display(w)
 		}
@@ -190,20 +190,20 @@ func addUser(r *db.SQLiteRepository, w io.Writer, params string) {
 	fields := strings.Split(params, ",")
 	if len(fields) != 3 {
 		msg := "invalid number of fields"
-		outputMessage(w, '-', msg)
+		OutputMessage(w, '-', msg)
 		return
 	}
 
 	e, err := db.NewEntry(fields[0], fields[1], fields[2])
 	if err != nil {
-		outputMessage(w, '-', err.Error())
+		OutputMessage(w, '-', err.Error())
 	} else {
 		_, err = r.Insert(*e)
 		if err != nil {
-			outputMessage(w, '-', err.Error())
+			OutputMessage(w, '-', err.Error())
 		} else {
 			msg := fmt.Sprintf("%v was added successfully", e.Name)
-			outputMessage(w, '+', msg)
+			OutputMessage(w, '+', msg)
 		}
 	}
 }
@@ -215,16 +215,16 @@ func addUser(r *db.SQLiteRepository, w io.Writer, params string) {
 func deleteUser(r *db.SQLiteRepository, w io.Writer, username string) {
 	e, err := r.GetByUsername(username)
 	if err != nil {
-		outputMessage(w, '-', err.Error())
+		OutputMessage(w, '-', err.Error())
 		return
 	}
 
 	err = r.Delete(username)
 	if err != nil {
-		outputMessage(w, '-', err.Error())
+		OutputMessage(w, '-', err.Error())
 	} else {
 		msg := fmt.Sprintf("%v was deleted successfully", e.Name)
-		outputMessage(w, '+', msg)
+		OutputMessage(w, '+', msg)
 	}
 }
 
@@ -236,7 +236,7 @@ func clearTable(r *db.SQLiteRepository, w io.Writer) {
 	r.ClearTable()
 
 	msg := fmt.Sprintf("%v was cleared successfully", r.CurrentTable())
-	outputMessage(w, '+', msg)
+	OutputMessage(w, '+', msg)
 }
 
 /*
@@ -246,10 +246,10 @@ func clearTable(r *db.SQLiteRepository, w io.Writer) {
 func deleteTable(r *db.SQLiteRepository, w io.Writer, tableName string) {
 	err := r.DeleteTable(tableName)
 	if err != nil {
-		outputMessage(w, '-', err.Error())
+		OutputMessage(w, '-', err.Error())
 	} else {
 		msg := fmt.Sprintf("%v was deleted successfully", tableName)
-		outputMessage(w, '+', msg)
+		OutputMessage(w, '+', msg)
 	}
 }
 
@@ -275,7 +275,7 @@ func listTables(r *db.SQLiteRepository, w io.Writer) {
 func importCSV(r *db.SQLiteRepository, rd io.Reader, w io.Writer) {
 	entries, err := importer.ImportCSV(rd)
 	if err != nil {
-		outputMessage(w, '-', err.Error())
+		OutputMessage(w, '-', err.Error())
 		return
 	}
 
@@ -284,18 +284,18 @@ func importCSV(r *db.SQLiteRepository, rd io.Reader, w io.Writer) {
 		if err != nil {
 			if errors.Is(err, db.ErrDuplicate) {
 				msg := fmt.Sprintf("Entry on line %d already exists", i+2)
-				outputMessage(w, '-', msg)
+				OutputMessage(w, '-', msg)
 				return
 			}
 
-			outputMessage(w, '-', err.Error())
+			OutputMessage(w, '-', err.Error())
 			return
 		}
 	}
 
 	msg := fmt.Sprintf("import completed successfully. %d entries added.",
 		len(entries))
-	outputMessage(w, '+', msg)
+	OutputMessage(w, '+', msg)
 }
 
 /*
@@ -307,13 +307,13 @@ func exportTable(r *db.SQLiteRepository, w, out io.Writer) {
 	entries, err := r.All()
 
 	if err != nil {
-		outputMessage(w, '-', err.Error())
+		OutputMessage(w, '-', err.Error())
 		return
 	}
 
 	book, err := exporter.ExportAddressBook(entries)
 	if err != nil {
-		outputMessage(w, '-', err.Error())
+		OutputMessage(w, '-', err.Error())
 		return
 	}
 
@@ -327,5 +327,5 @@ func exportTable(r *db.SQLiteRepository, w, out io.Writer) {
 
 func helpUser(w io.Writer) {
 	msg := "type 'help' for a list of commands"
-	outputMessage(w, '!', msg)
+	OutputMessage(w, '!', msg)
 }

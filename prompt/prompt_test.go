@@ -103,7 +103,7 @@ func TestOutputMessage(t *testing.T) {
 			t.Parallel()
 
 			var got bytes.Buffer
-			outputMessage(&got, tc.input.symbol, tc.input.msg)
+			OutputMessage(&got, tc.input.symbol, tc.input.msg)
 
 			if got.String() != tc.expected {
 				t.Fatalf("got: %v, expected: %v", got.String(), tc.expected)

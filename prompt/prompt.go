@@ -53,19 +53,19 @@ Loop:
 			case "export_table":
 				all, err := r.All()
 				if err != nil { 
-					outputMessage(w, '-', err.Error())
+					OutputMessage(w, '-', err.Error())
 				}
 
 				if len(all) == 0 {
 					msg := "cannot export empty table"
-					outputMessage(w, '-', msg)
+					OutputMessage(w, '-', msg)
 					continue
 				}
 
 				_, err = os.Stat("./Address Books")
 				if os.IsNotExist(err) {
 					if err = os.Mkdir("./Address Books", os.ModePerm); err != nil {
-						outputMessage(w, '-', err.Error())
+						OutputMessage(w, '-', err.Error())
 						continue
 					}
 				}
@@ -75,7 +75,7 @@ Loop:
 
 				f, err := os.Create(fname)
 				if err != nil {
-					outputMessage(w, '-', err.Error())
+					OutputMessage(w, '-', err.Error())
 					continue
 				}
 				exportTable(r, w, f)
@@ -106,7 +106,7 @@ Loop:
 			case "import_csv":
 				f, err := os.Open(param)
 				if err != nil {
-					outputMessage(w, '-', err.Error())
+					OutputMessage(w, '-', err.Error())
 					continue
 				}
 				importCSV(r, f, w)
@@ -146,7 +146,7 @@ func newReadLine(rd io.ReadCloser) *readline.Instance {
 		! indicates exclamatory
 */
 
-func outputMessage(w io.Writer, symbol rune, msg string) {
+func OutputMessage(w io.Writer, symbol rune, msg string) {
 	fmt.Fprintf(w, "[%v] %v\n\n", string(symbol), msg)
 }
 

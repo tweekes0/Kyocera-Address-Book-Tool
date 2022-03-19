@@ -323,6 +323,9 @@ func exportTable(r *db.SQLiteRepository, w, out io.Writer) {
 
 	s := exporter.ElementToString(book)
 	out.Write([]byte(s))
+	
+	msg := "table exported successfully"
+	OutputMessage(w, '+', msg)
 }
 
 /*

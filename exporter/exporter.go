@@ -26,7 +26,7 @@ const (
 	XMLName: name of the XML element
 	Id: the position of the contact within the address book
 	Type: defines the element as a contact
-	DisplayName: the name for the contact
+	DisplayName/Kana: the name for the contact
 	MailAddress: the email for the contact
 	SendKeisyou: an attr that was always set to 0
 	SMB*: attributes for scanning via SMB
@@ -41,6 +41,7 @@ type contactElement struct {
 	Id                    int64    `xml:"Id,attr"`
 	Type                  string   `xml:"Type,attr"`
 	DisplayName           string   `xml:"DisplayName,attr"`
+	DisplayNameKana       string   `xml:"DisplayNameKana,attr"`
 	SendKeisyou           string   `xml:"SendKeisyou,attr"`
 	MailAddress           string   `xml:"MailAddress,attr"`
 	SendCorpName          string   `xml:"SendCorpName,attr"`
@@ -89,7 +90,9 @@ func newContactElement(id int64, e *db.Entry) (*contactElement, error) {
 	p.Id = id
 	p.Type = "Contact"
 	p.DisplayName = e.Name
+	p.DisplayNameKana = e.Name
 	p.MailAddress = e.Email
+	p.SendKeisyou = "0"
 	p.SendCorpName = ""
 	p.SendPostName = ""
 	p.SmbHostName = ""
@@ -165,7 +168,7 @@ func newOneTouchKeyElement(id, addressId int64, displayName,
 
 /*
 	AddressBookExport abstracts the data that will be stored in the XML address
-	book file. 
+	book file.
 
 	XMLName: name of the XML element
 	ContactComment: xml comment describing contact list
@@ -183,8 +186,8 @@ type AddressBookExport struct {
 }
 
 /*
-	A function that will return XML struct when given a list of db.Entry 
-	pointers. More OTKs type can be exported you would have to change the 
+	A function that will return XML struct when given a list of db.Entry
+	pointers. More OTKs type can be exported you would have to change the
 	ID of the newOneTouchkeyElement to be len(entries) + i + 1 and so on.
 
 	entries: a slice of db.Entry references

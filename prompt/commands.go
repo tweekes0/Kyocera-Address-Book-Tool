@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
+	"github.com/fatih/color"
+	"github.com/rodaine/table"
 	"github.com/tweekes0/kyocera-ab-tool/db"
 	"github.com/tweekes0/kyocera-ab-tool/exporter"
 	"github.com/tweekes0/kyocera-ab-tool/importer"
@@ -172,12 +174,26 @@ func showUsers(r *db.SQLiteRepository, w io.Writer) {
 		msg := fmt.Sprintf("%v is empty", r.CurrentTable())
 		OutputMessage(w, '!', msg)
 	default:
-		// TODO: implement pretty way to print all the entries
-		msg := fmt.Sprintf("contents of %v", r.CurrentTable())
+		msg := fmt.Sprintf("users of %v", r.CurrentTable())
 		OutputMessage(w, '+', msg)
-		for _, e := range all {
-			e.Display(w)
+
+		all, err := r.All()
+		if err != nil {
+			OutputMessage(w, '-', err.Error())
+			return
 		}
+		
+		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+		columnFmt := color.New(color.FgYellow).SprintfFunc()
+	
+		tbl := table.New("ID", "Name", "Username", "Email")
+		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+	
+		for _, entry := range all {
+			tbl.AddRow(entry.ID, entry.Name, entry.Username, entry.Email) 
+		}
+
+		tbl.Print()
 	}
 }
 

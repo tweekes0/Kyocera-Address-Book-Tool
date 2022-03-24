@@ -185,19 +185,15 @@ func TestShowUser(t *testing.T) {
 
 	t.Run("show users in the default table after inserts", func(t *testing.T) {
 		var got, expected bytes.Buffer
-		all, err := repo.All()
+		_, err := repo.All()
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		showUsers(repo, &got)
 
-		expected.WriteString(fmt.Sprintf("[+] contents of %v\n\n",
+		expected.WriteString(fmt.Sprintf("[+] users of %v\n\n",
 			repo.CurrentTable()))
-
-		for _, e := range all {
-			e.Display(&expected)
-		}
 
 		if got.String() != expected.String() {
 			t.Fatalf("got: %v, expected: %v", got.String(), expected.String())

@@ -182,15 +182,15 @@ func showUsers(r *db.SQLiteRepository, w io.Writer) {
 			OutputMessage(w, '-', err.Error())
 			return
 		}
-		
+
 		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
 		columnFmt := color.New(color.FgYellow).SprintfFunc()
-	
+
 		tbl := table.New("ID", "Name", "Username", "Email")
 		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-	
+
 		for _, entry := range all {
-			tbl.AddRow(entry.ID, entry.Name, entry.Username, entry.Email) 
+			tbl.AddRow(entry.ID, entry.Name, entry.Username, entry.Email)
 		}
 
 		tbl.Print()
@@ -319,9 +319,9 @@ func importCSV(r *db.SQLiteRepository, rd io.Reader, w io.Writer) {
 }
 
 /*
-	Converts the entries within the current table to XML and write it to the 
+	Converts the entries within the current table to XML and write it to the
 	out io.Writer
- */
+*/
 
 func exportTable(r *db.SQLiteRepository, w, out io.Writer) {
 	entries, err := r.All()
@@ -339,7 +339,7 @@ func exportTable(r *db.SQLiteRepository, w, out io.Writer) {
 
 	s := exporter.ElementToString(book)
 	out.Write([]byte(s))
-	
+
 	msg := "table exported successfully"
 	OutputMessage(w, '+', msg)
 }

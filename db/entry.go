@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"strings"
 )
 
 /*
@@ -42,7 +43,7 @@ func (e *Entry) Display(writer io.Writer) {
 
 func NewEntry(name, username, email string) (*Entry, error) {
 	p := new(Entry)
-	p.Name = name
+	p.Name = strings.Title(strings.ToLower(name))
 	p.Username = username
 	p.Email = email
 
@@ -55,16 +56,12 @@ func NewEntry(name, username, email string) (*Entry, error) {
 }
 
 func newTestEntry(id int64, name, username, email string) (*Entry, error) {
-	p := new(Entry)
-	p.ID = id
-	p.Name = name
-	p.Username = username
-	p.Email = email
-
-	err := validateEntry(p)
+	p, err := NewEntry(name, username, email)
 	if err != nil {
 		return nil, err
 	}
+
+	p.ID = id
 
 	return p, err
 }

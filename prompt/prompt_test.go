@@ -21,7 +21,7 @@ func TestPrompt(t *testing.T) {
 		{
 			description: "add_user command",
 			input: "add_user john doe,jdoe,jdoe@email.com",
-			expected: "[+] john doe was added successfully\n\n",
+			expected: "[+] John Doe was added successfully\n\n",
 		},
 		{
 			description: "add_user command for duplicate",
@@ -31,7 +31,7 @@ func TestPrompt(t *testing.T) {
 		{
 			description: "delete_user command",
 			input: "delete_user jdoe",
-			expected: "[+] john doe was deleted successfully\n\n",
+			expected: "[+] John Doe was deleted successfully\n\n",
 		},
 		{
 			description: "delete_user command without param",

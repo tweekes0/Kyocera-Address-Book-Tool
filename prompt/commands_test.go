@@ -227,7 +227,7 @@ func TestAddUser(t *testing.T) {
 		{
 			description: "add valid user",
 			input:       "jane doe, jdoe,jdoe@email.com",
-			expected:    "[+] jane doe was added successfully\n\n",
+			expected:    "[+] Jane Doe was added successfully\n\n",
 		},
 		{
 			description: "add existing user",

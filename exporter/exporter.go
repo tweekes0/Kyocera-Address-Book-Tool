@@ -99,7 +99,7 @@ func newContactElement(id int64, e *db.Entry) (*contactElement, error) {
 	p.SmbPath = ""
 	p.SmbLoginPasswd = ""
 	p.SmbLoginName = ""
-	p.SmbPort = ""
+	p.SmbPort = "9999"
 	p.FtpPath = ""
 	p.FtpHostName = ""
 	p.FtpLoginName = ""
@@ -136,7 +136,7 @@ func newContactElement(id int64, e *db.Entry) (*contactElement, error) {
 	AddresdId: the ID of a contactElement. This defines where the OTK should get
 	the information to scan via the addressType.
 	Type: defines that the element will be a OneTouchKey
-	AddressType: defines the scan method ie Email/SMB/FTP/etc
+	AddressType: defines the scan method ie EMAIL/SMB/FTP/etc (must be in caps)
 	DisplayName: The name that will appear on the OneTouchKey
 */
 
@@ -206,7 +206,7 @@ func ExportAddressBook(entries []*db.Entry) (*AddressBookExport, error) {
 		contacts = append(contacts, *ce)
 
 		eotk, err := newOneTouchKeyElement(int64(i+1), ce.Id, ce.DisplayName,
-			"Email")
+			"EMAIL")
 
 		if err != nil {
 			return nil, err

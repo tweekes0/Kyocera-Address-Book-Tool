@@ -184,10 +184,9 @@ func showUsers(r *db.SQLiteRepository, w io.Writer) {
 		}
 
 		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-		columnFmt := color.New(color.FgYellow).SprintfFunc()
 
 		tbl := table.New("ID", "Name", "Username", "Email")
-		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+		tbl.WithHeaderFormatter(headerFmt)
 
 		for _, entry := range all {
 			tbl.AddRow(entry.ID, entry.Name, entry.Username, entry.Email)

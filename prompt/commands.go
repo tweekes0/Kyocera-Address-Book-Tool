@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
-	"github.com/fatih/color"
 	"github.com/rodaine/table"
 	"github.com/tweekes0/kyocera-ab-tool/db"
 	"github.com/tweekes0/kyocera-ab-tool/exporter"
@@ -183,10 +182,7 @@ func showUsers(r *db.SQLiteRepository, w io.Writer) {
 			return
 		}
 
-		headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-
-		tbl := table.New("ID", "Name", "Username", "Email")
-		tbl.WithHeaderFormatter(headerFmt)
+		tbl := table.New("ID", "Name", "Username", "Email")		
 
 		for _, entry := range all {
 			tbl.AddRow(entry.ID, entry.Name, entry.Username, entry.Email)

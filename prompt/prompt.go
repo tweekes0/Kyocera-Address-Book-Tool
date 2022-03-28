@@ -79,9 +79,10 @@ Loop:
 					continue
 				}
 				exportTable(r, w, f)
+				f.Close()
 			case "help":
 				listCommands(w)
-			case "quit":
+			case "exit", "quit":
 				break Loop
 			case "create_table", "switch_table", "delete_table", "add_user",
 				 "delete_user", "import_csv":

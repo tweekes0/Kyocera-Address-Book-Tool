@@ -70,8 +70,8 @@ Loop:
 					}
 				}
 
-				fname := fmt.Sprintf("./Address Books/%v %v.xml",
-					r.CurrentTable(), time.Now().Format("Jan 6, 2006"))
+				fname := fmt.Sprintf("./Address Books/%v %s.xml",
+					r.CurrentTable(), time.Now().Format("2006-Jan-02"))
 
 				f, err := os.Create(fname)
 				if err != nil {

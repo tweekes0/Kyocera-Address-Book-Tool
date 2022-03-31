@@ -85,7 +85,7 @@ Loop:
 			case "exit", "quit":
 				break Loop
 			case "create_table", "switch_table", "delete_table", "add_user",
-				 "delete_user", "import_csv":
+				 "delete_user", "update_user", "import_csv":
 				helpCommand(w, command)
 			default:
 				helpUser(w)
@@ -104,6 +104,8 @@ Loop:
 				addUser(r, w, param)
 			case "delete_user":
 				deleteUser(r, w, param)
+			case "update_user":
+				updateUser(r, w, param)
 			case "import_csv":
 				f, err := os.Open(param)
 				if err != nil {

@@ -61,7 +61,7 @@ const (
 */
 
 const (
-	namePattern         = `^[a-zA-Z]+([.]?[ ]?[a-zA-Z]+)*$`
+	namePattern         = `^[a-zA-Z]+([-.]?[ ]?[a-zA-Z]+)*$`
 	usernamePattern     = `^[a-zA-Z]+([\._-]?[a-zA-Z0-9])*$`
 	emailPattern        = `^[a-zA-Z]+([\._-]?[a-zA-Z0-9])+@[a-zA-Z]+(\.[a-zA-Z]+)+$`
 	tablePattern        = `^[a-zA-Z_]{1}([a-zA-Z0-9]+[_]?)*$`

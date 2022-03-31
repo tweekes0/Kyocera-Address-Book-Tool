@@ -28,6 +28,7 @@ var completions = readline.NewPrefixCompleter(
 	readline.PcItem("show_users"),
 	readline.PcItem("add_user"),
 	readline.PcItem("delete_user"),
+	readline.PcItem("update_user"),
 	readline.PcItem("import_csv"),
 	readline.PcItem("exit"),
 
@@ -41,6 +42,7 @@ var completions = readline.NewPrefixCompleter(
 		readline.PcItem("show_users"),
 		readline.PcItem("add_user"),
 		readline.PcItem("delete_user"),
+		readline.PcItem("update_user"),
 		readline.PcItem("import_csv"),
 		readline.PcItem("exit"),
 	),
@@ -89,6 +91,10 @@ var commands = map[string]struct {
 	"delete_user": {
 		description: "delete a single user from the current table",
 		usage:       "delete_user 'USERNAME'",
+	},
+	"update_user": {
+		description: "update user in the current table. Fields must be separated by commas",
+		usage:       "update_user 'USERNAME' 'NAME,USERNAME,EMAIL'",
 	},
 	"import_csv": {
 		description: "import users from csv file into current table",
@@ -212,15 +218,53 @@ func addUser(r *db.SQLiteRepository, w io.Writer, params string) {
 	e, err := db.NewEntry(fields[0], fields[1], fields[2])
 	if err != nil {
 		OutputMessage(w, '-', err.Error())
+		return
 	} else {
 		_, err = r.Insert(*e)
 		if err != nil {
 			OutputMessage(w, '-', err.Error())
+			return
 		} else {
 			msg := fmt.Sprintf("%v was added successfully", e.Name)
 			OutputMessage(w, '+', msg)
 		}
 	}
+}
+
+func updateUser(r *db.SQLiteRepository, w io.Writer, params string) {
+	p := strings.Split(params, " ")
+	_, err := r.GetByUsername(p[0])
+
+	if err != nil {
+		OutputMessage(w, '-', err.Error())
+		return
+	}
+
+	fields := strings.Split(strings.Join(p[1:], " "), ",")
+	if len(fields) != 3 {
+		msg := "invalid number of fields"
+		OutputMessage(w, '-', msg)
+		return
+	}
+
+	for i, field := range fields {
+		fields[i] = strings.TrimSpace(field)
+	}
+
+	e, err := db.NewEntry(fields[0], fields[1], fields[2])
+	if err != nil {
+		OutputMessage(w, '-', err.Error())
+		return
+	}
+
+	_, err = r.Update(p[0], e)
+	if err != nil {
+		OutputMessage(w, '-', err.Error())
+		return
+	}
+
+	msg := fmt.Sprintf("%v has been updated", e.Name)
+	OutputMessage(w, '+', msg)
 }
 
 /*

@@ -73,7 +73,7 @@ var commands = map[string]struct {
 		usage:       "delete_table 'TABLE_NAME'",
 	},
 	"export_table": {
-		description: "exports the current table to an address book xml",
+		description: "exports the current table to an xml file in the Address Books directory",
 		usage:       "export_table",
 	},
 	"list_tables": {

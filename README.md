@@ -35,6 +35,7 @@ This application uses these great libraries
 - [go-sqlite3](https://github.com/mattn/go-sqlite3) -- Go SQLite3 driver
 - [readline](https://github.com/chzyer/readline) -- Pure Go implementation of Readline for user input 
 - [table](https://github.com/rodaine/table) -- Go CLI table generator
+- [xgo](https://github.com/karalabe/xgo) -- CGO Cross Compiler
 
 ## Known Issues
 

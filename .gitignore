@@ -6,3 +6,5 @@
 Address Books/
 bin
 playground/
+build.sh
+Makefile

@@ -395,23 +395,23 @@ func TestImportCSV(t *testing.T) {
 
 	tt := []struct {
 		description string
-		input [][]string
-		expected string
-	} {
+		input       [][]string
+		expected    string
+	}{
 		{
 			description: "import valid csv",
-			input: csv1,
-			expected: "[+] import completed successfully. 2 entries added.\n\n",
+			input:       csv1,
+			expected:    "[+] import completed successfully. 2 entries added.\n\n",
 		},
 		{
 			description: "import csv with invalid header",
-			input: csv2,
-			expected: "[-] invalid header\n\n",
+			input:       csv2,
+			expected:    "[-] invalid header\n\n",
 		},
 		{
 			description: "import csv with existing entry",
-			input: csv1,
-			expected: "[-] Entry on line 2 already exists\n\n",
+			input:       csv1,
+			expected:    "[-] Entry on line 2 already exists\n\n",
 		},
 	}
 
@@ -434,7 +434,7 @@ func TestImportCSV(t *testing.T) {
 
 func TestHelpUser(t *testing.T) {
 	t.Parallel()
-	
+
 	var got bytes.Buffer
 	expected := "[!] type 'help' for a list of commands\n\n"
 

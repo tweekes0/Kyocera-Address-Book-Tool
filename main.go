@@ -18,7 +18,6 @@ const (
 )
 
 func main() {
-	
 	// Create the Database directory if it doesn't exist
 	_, err := os.Stat(DATABASE_DIR)
 	if os.IsNotExist(err) {
@@ -55,7 +54,7 @@ func main() {
 	err = r.Initialize()
 	errChecker(err)
 
-	// CLI applicationx
+	// CLI application
 	prompt.Prompt(r, os.Stdin, os.Stdout)
 }
 

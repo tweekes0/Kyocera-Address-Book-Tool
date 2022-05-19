@@ -15,43 +15,43 @@ func TestPrompt(t *testing.T) {
 
 	tt := []struct {
 		description string
-		input string
-		expected string
-	} {
+		input       string
+		expected    string
+	}{
 		{
 			description: "add_user command",
-			input: "add_user john doe,jdoe,jdoe@email.com",
-			expected: "[+] John Doe was added successfully\n\n",
+			input:       "add_user john doe,jdoe,jdoe@email.com",
+			expected:    "[+] John Doe was added successfully\n\n",
 		},
 		{
 			description: "add_user command for duplicate",
-			input: "add_user john doe,jdoe,jdoe@email.com",
-			expected: "[-] record already exists\n\n",
+			input:       "add_user john doe,jdoe,jdoe@email.com",
+			expected:    "[-] record already exists\n\n",
 		},
 		{
 			description: "delete_user command",
-			input: "delete_user jdoe",
-			expected: "[+] John Doe was deleted successfully\n\n",
+			input:       "delete_user jdoe",
+			expected:    "[+] John Doe was deleted successfully\n\n",
 		},
 		{
 			description: "delete_user command without param",
-			input: "delete_user",
-			expected: "\ndelete a single user from the current table\nusage: delete_user 'USERNAME'\n\n",
+			input:       "delete_user",
+			expected:    "\ndelete a single user from the current table\nusage: delete_user 'USERNAME'\n\n",
 		},
 		{
 			description: "unknown command",
-			input: "unknown",
-			expected: "[!] type 'help' for a list of commands\n\n",
+			input:       "unknown",
+			expected:    "[!] type 'help' for a list of commands\n\n",
 		},
 		{
 			description: "blank link",
-			input: "",
-			expected: "",
+			input:       "",
+			expected:    "",
 		},
 	}
 
-	for _, tc := range tt  {
-		t.Run(tc.description, func(t *testing.T) {	
+	for _, tc := range tt {
+		t.Run(tc.description, func(t *testing.T) {
 			var got bytes.Buffer
 			rd := ioutil.NopCloser(strings.NewReader(tc.input))
 			Prompt(repo, rd, &got)
@@ -64,35 +64,44 @@ func TestPrompt(t *testing.T) {
 }
 
 func TestOutputMessage(t *testing.T) {
-	tt := [] struct {
+	tt := []struct {
 		description string
-		input struct {
+		input       struct {
 			symbol rune
-			msg string
+			msg    string
 		}
 		expected string
-	} {
+	}{
 		{
 			description: "output error message",
-			input: struct{symbol rune; msg string}{
+			input: struct {
+				symbol rune
+				msg    string
+			}{
 				symbol: '-',
-				msg: "ERROR!",
+				msg:    "ERROR!",
 			},
 			expected: "[-] ERROR!\n\n",
 		},
 		{
 			description: "output success message",
-			input: struct{symbol rune; msg string}{
+			input: struct {
+				symbol rune
+				msg    string
+			}{
 				symbol: '+',
-				msg: "SUCCESS!",
+				msg:    "SUCCESS!",
 			},
 			expected: "[+] SUCCESS!\n\n",
 		},
 		{
 			description: "output exclamatory message",
-			input: struct{symbol rune; msg string}{
+			input: struct {
+				symbol rune
+				msg    string
+			}{
 				symbol: '!',
-				msg: "EXPLANATION!",
+				msg:    "EXPLANATION!",
 			},
 			expected: "[!] EXPLANATION!\n\n",
 		},

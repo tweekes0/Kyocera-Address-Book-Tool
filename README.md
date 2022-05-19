@@ -2,7 +2,7 @@
 
 Kyocera Address Book tool or kyocera-ab-tool is an interractive CLI application
 written in Go to facilitate the creation and maintainence of Kyocera scanner 
-address books and their OneTouchKeys (Scanner Shortcuts). 
+address books and their OneTouchKeys (scanner shortcuts). 
 
 I wrote this tool to get a feel for Go, take advantage of Go's portability and 
 the [Go Gopher](https://go.dev/blog/gopher) is also pretty cute. This tool creates

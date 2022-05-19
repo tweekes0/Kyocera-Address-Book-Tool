@@ -46,7 +46,7 @@ func TestHelpCommand(t *testing.T) {
 		})
 	}
 
-	t.Run("help command without a paramter", func(t *testing.T) {
+	t.Run("help command without a parameter", func(t *testing.T) {
 		t.Parallel()
 
 		keys := make([]string, 0, len(commands))

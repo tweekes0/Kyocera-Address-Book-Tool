@@ -107,7 +107,7 @@ var commands = map[string]struct {
 }
 
 /*
-	Function that will print the description and usage of a commmand if it exists,
+	Function that will print the description and usage of a command if it exists,
 	otherwise it will list the available commands.
 */
 

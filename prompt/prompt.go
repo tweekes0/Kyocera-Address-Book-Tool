@@ -3,10 +3,7 @@ package prompt
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
-	"strings"
-	"time"
 
 	"github.com/chzyer/readline"
 	"github.com/tweekes0/kyocera-ab-tool/db"
@@ -52,7 +49,7 @@ Loop:
 				showUsers(r, w)
 			case "export_table":
 				all, err := r.All()
-				if err != nil { 
+				if err != nil {
 					OutputMessage(w, '-', err.Error())
 				}
 
@@ -62,22 +59,12 @@ Loop:
 					continue
 				}
 
-				_, err = os.Stat("./Address Books")
-				if os.IsNotExist(err) {
-					if err = os.Mkdir("./Address Books", os.ModePerm); err != nil {
-						OutputMessage(w, '-', err.Error())
-						continue
-					}
-				}
-
-				fname := fmt.Sprintf("./Address Books/%v %s.xml",
-					r.CurrentTable(), time.Now().Format("2006-Jan-02"))
-
-				f, err := os.Create(fname)
+				f, err := createFile(r.CurrentTable())
 				if err != nil {
 					OutputMessage(w, '-', err.Error())
 					continue
 				}
+
 				exportTable(r, w, f)
 				f.Close()
 			case "help":
@@ -85,7 +72,7 @@ Loop:
 			case "exit", "quit":
 				break Loop
 			case "create_table", "switch_table", "delete_table", "add_user",
-				 "delete_user", "update_user", "import_csv":
+				"delete_user", "update_user", "import_csv":
 				helpCommand(w, command)
 			default:
 				helpUser(w)
@@ -120,73 +107,4 @@ Loop:
 			}
 		}
 	}
-}
-
-/*
-	Returns customized readline instance.
-*/
-
-func newReadLine(rd io.ReadCloser) *readline.Instance {
-	l, err := readline.NewEx(&readline.Config{
-		Prompt:            "",
-		AutoComplete:      completions,
-		InterruptPrompt:   "^C",
-		EOFPrompt:         "exit",
-		HistorySearchFold: true,
-		Stdin:             rd,
-	})
-	if err != nil {
-		log.Fatalf("could not create readline: %q", err)
-	}
-
-	return l
-}
-
-/*
-	Outputs message to the user.
-		+ indicates success
-		- indicates error
-		! indicates exclamatory
-*/
-
-func OutputMessage(w io.Writer, symbol rune, msg string) {
-	fmt.Fprintf(w, "[%v] %v\n\n", string(symbol), msg)
-}
-
-/*
-	Remove the quotes from the supplied string
-*/
-
-func stripQuotes(s string) string {
-	s = strings.Replace(s, `"`, "", -1)
-	s = strings.Replace(s, `'`, "", -1)
-	s = strings.Replace(s, "`", "", -1)
-
-	return s
-}
-
-/*
-	Take a from user input and returns two strings a command and it's optional
-	parameter
-*/
-
-func parseArgs(s string) (command string, param string) {
-	fields := strings.Fields(s)
-	if len(fields) == 0 {
-		command = ""
-		param = ""
-		return
-	}
-
-	if len(fields) == 1 {
-		command = fields[0]
-		param = ""
-		return
-	}
-
-	command = fields[0]
-	param = strings.Join(fields[1:], " ")
-	param = stripQuotes(param)
-
-	return
 }
